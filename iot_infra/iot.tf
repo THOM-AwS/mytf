@@ -78,6 +78,10 @@ resource "aws_iot_topic_rule" "rule" {
       target_arn     = aws_sns_topic.myerrortopic.arn
     }
   }
+  tags = {
+      repository = "hamer/iot"
+      workspace  = terraform.workspace
+    }
 }
 
 resource "aws_sns_topic" "mytopic" {
