@@ -54,7 +54,7 @@ EOF
 }
 
 resource "aws_iot_role_alias" "alias" {
-  alias    = "IOT-dynamodb-access-role-alias"
+  alias    = "IOT-access-role-alias"
   role_arn = aws_iam_role.role.arn
 }
 
