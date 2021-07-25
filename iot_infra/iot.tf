@@ -78,10 +78,6 @@ resource "aws_iot_topic_rule" "rule" {
       target_arn     = aws_sns_topic.myerrortopic.arn
     }
   }
-  tags = {
-      repository = "hamer/iot"
-      workspace  = terraform.workspace
-    }
 }
 
 resource "aws_sns_topic" "mytopic" {
@@ -94,10 +90,6 @@ resource "aws_sns_topic" "mytopic" {
 
 resource "aws_sns_topic" "myerrortopic" {
   name = "myerrortopic"
-  tags = {
-      repository = "hamer/iot"
-      workspace  = terraform.workspace
-    }
 }
 
 resource "aws_iam_role_policy" "iam_policy_for_lambda" {
