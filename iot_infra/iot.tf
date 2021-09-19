@@ -10,10 +10,10 @@ resource "aws_iot_policy" "policy" {
         Action = [
           "iot:*",
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
-                "*"
-            ]
+          "*"
+        ]
       },
     ]
   })
@@ -34,11 +34,11 @@ resource "aws_iot_thing_principal_attachment" "att" {
 }
 
 resource "aws_iot_thing" "esp" {
-    name = local.workspace["thing_name"]
+  name = local.workspace["thing_name"]
 }
 
 resource "aws_iam_role" "role" {
-  name = local.workspace["iam_role_name"]
+  name               = local.workspace["iam_role_name"]
   assume_role_policy = <<EOF
 {
   "Version":"2012-10-17",
@@ -83,9 +83,9 @@ resource "aws_iot_topic_rule" "rule" {
 resource "aws_sns_topic" "mytopic" {
   name = "mytopic"
   tags = {
-      repository = "hamer/iot"
-      workspace  = terraform.workspace
-    }
+    repository = "hamer/iot"
+    workspace  = terraform.workspace
+  }
 }
 
 resource "aws_sns_topic" "myerrortopic" {

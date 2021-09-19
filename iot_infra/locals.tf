@@ -7,10 +7,10 @@ locals {
       policy_name     = "iot_policy"
       thing_name      = "esp320001"
       iam_role_name   = "iot_role"
-      tags_all    = {
-          "repository" = "hamer/iot"
-          "workspace"  = "iot"
-        }
+      tags_all = {
+        "repository" = "hamer/iot"
+        "workspace"  = "iot"
+      }
     }
   }
 

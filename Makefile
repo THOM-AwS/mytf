@@ -12,21 +12,25 @@ init: .env
 plan: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform plan'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf ../.terraform/modules/'
 .PHONY: plan
 
 apply: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform apply'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf ../.terraform/modules/'
 .PHONY: apply
 
 applyAuto: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform apply -auto-approve'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf ../.terraform/modules/'
 .PHONY: applyAuto
 
 destroy: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform destroy -auto-approve'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf ../.terraform/modules/'
 .PHONY: destroy
 
 import_resources: .env workspace
