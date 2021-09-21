@@ -4,6 +4,6 @@
 deploy infra for the account using:
 
 ```
-TERRAFORM_ROOT_MODULE=$subfolder TERRAFORM_WORKSPACE=$workspace make apply
+SUBFOLDER=$(directory) TERRAFORM_WORKSPACE=$(workspace) make apply
 ```
-from the tf directory.
+from the tf directory (mytf).
