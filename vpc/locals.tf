@@ -1,6 +1,6 @@
 locals {
   aws_profile = "hamer"
-  aws_region = "ap-southeast-2"
+  aws_region  = "ap-southeast-2"
   network_acls = {
     default_inbound = [
       {

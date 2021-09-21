@@ -12,8 +12,8 @@ module "thomas-vpc" {
   database_subnets = ["10.10.8.0/24", "10.10.9.0/24", "10.10.10.0/24"]
   #intra_subnets         = ["10.10.12.0/24", "10.10.13.0/24", "10.10.14.0/24"]
   enable_nat_gateway                     = false
-  reuse_nat_ips                          = false 
-  single_nat_gateway                     = false 
+  reuse_nat_ips                          = false
+  single_nat_gateway                     = false
   one_nat_gateway_per_az                 = false
   create_database_subnet_group           = true
   create_database_subnet_route_table     = true
@@ -58,7 +58,7 @@ module "thomas-vpc" {
 
   tags = {
     Environment = "prod"
-    managed-by   = "Terraform"
+    managed-by  = "Terraform"
   }
 }
 
