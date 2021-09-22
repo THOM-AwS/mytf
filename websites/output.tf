@@ -14,12 +14,13 @@ output "user_details" {
 }
 
 output "user_acces_key" {
-  description = "User Name"
+  description = "Access Key"
   value       = module.aws-static-website.user_acces_key
 }
 
 output "user_secret_access_key" {
-  description = "User Name"
+  description = "Secret Access Key"
+  sensitive   = true
   value       = module.aws-static-website.user_secret_access_key
 }
 

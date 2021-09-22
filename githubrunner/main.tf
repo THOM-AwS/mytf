@@ -21,7 +21,7 @@ module "github-runner_runners" {
   sqs_build_queue                     = aws_sqs_queue.runner-queue.name
   runner_iam_role_managed_policy_arns = "arn:aws:iam::490638925706:role/SSMInstanceProfile"
   webhook_lambda_zip                  = "lambdas-download/webhook.zip"
-  runner_binaries_syncer_lambda_zip  = "lambdas-download/runner-binaries-syncer.zip"
+  runner_binaries_syncer_lambda_zip   = "lambdas-download/runner-binaries-syncer.zip"
   runners_lambda_zip                  = "lambdas-download/runners.zip"
   enable_organization_runners         = false
   enable_ssm_on_runners               = true
