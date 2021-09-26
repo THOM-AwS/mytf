@@ -20,21 +20,21 @@ jobs:
     - uses: actions/checkout@v2
       
     - name: hamer init
-    env:
-      TERRAFORM_WORKSPACE: hamer
+      env:
+        TERRAFORM_WORKSPACE: hamer
       run: make init       
     - name: hamer plan
-    env:
-      TERRAFORM_WORKSPACE: hamer
+      env:
+        TERRAFORM_WORKSPACE: hamer
       needs: hamer init
       run: make plan
 
     - name: wcplumning init
-    env:
-      TERRAFORM_WORKSPACE: wcplumbing
+      env:
+        TERRAFORM_WORKSPACE: wcplumbing
       run: make init       
     - name: wcplumbing Plan
-    env:
-      TERRAFORM_WORKSPACE: wcplumbing
+      env:
+        TERRAFORM_WORKSPACE: wcplumbing
       needs: wcplumbing init
       run: make plan
