@@ -34,7 +34,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2    
     - name: hamer plan
-      needs: hamerinit
+    needs: hamerinit
       run: make plan
 
   wcplumbinginit:
@@ -65,5 +65,5 @@ jobs:
     - name: wcplumbing Plan
       env:
         TERRAFORM_WORKSPACE: wcplumbing
-      needs: wcplumbinginit
+    needs: wcplumbinginit
       run: make plan
