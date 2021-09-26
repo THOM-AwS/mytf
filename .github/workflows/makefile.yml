@@ -16,8 +16,7 @@ jobs:
       SUBFOLDER: websites
     
     steps:
-    - uses: actions/checkout@v2
-      
+    - uses: actions/checkout@v2    
     - name: hamer init
       env:
         TERRAFORM_WORKSPACE: hamer
