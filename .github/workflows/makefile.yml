@@ -45,6 +45,9 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
+    
+    steps:
+    - uses: actions/checkout@v2 
     - name: wcplumning init
       env:
         TERRAFORM_WORKSPACE: wcplumbing
@@ -57,6 +60,9 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
+    
+    steps:
+    - uses: actions/checkout@v2 
     - name: wcplumbing Plan
       env:
         TERRAFORM_WORKSPACE: wcplumbing
