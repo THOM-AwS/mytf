@@ -17,7 +17,6 @@ jobs:
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
     steps:
-    - name: checkout
     - uses: actions/checkout@v2    
     - name: hamer plan
       run: make plan
@@ -33,7 +32,6 @@ jobs:
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
     steps:
-    - name: checkout
     - uses: actions/checkout@v2    
     - name: Hamer Apply
       run: make applyAuto
@@ -46,7 +44,6 @@ jobs:
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
     steps:
-    - name: checkout
     - uses: actions/checkout@v2 
     - name: wcplumbing Plan
       env:
@@ -63,7 +60,6 @@ jobs:
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
     steps:
-    - name: checkout
     - uses: actions/checkout@v2 
     - name: wcplumbing Apply
       env:
