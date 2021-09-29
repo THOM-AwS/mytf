@@ -47,8 +47,7 @@ PHONY: plan
 
 workspace: .env
 	docker-compose run --rm envvars ensure --tags terraform
-	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform workspace new $(TERRAFORM_WORKSPACE); true' 
-	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform workspace select $(TERRAFORM_WORKSPACE)' 
+	docker-compose run --rm terraform-utils sh -c 'cd $(SUBFOLDER); terraform workspace select $(TERRAFORM_WORKSPACE) || terraform workspace new $(TERRAFORM_WORKSPACE)'
 .PHONY: workspace
 
 .env:

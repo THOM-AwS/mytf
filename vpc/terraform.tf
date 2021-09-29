@@ -8,6 +8,6 @@ terraform {
 }
 
 provider "aws" {
-  profile = local.aws_profile
-  region  = local.aws_region
+  profile = local.workspace["aws_profile"]
+  region  = local.workspace["aws_region"]
 }
