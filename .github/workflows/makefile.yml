@@ -16,24 +16,56 @@ jobs:
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
-    
     steps:
+    - name: checkout
     - uses: actions/checkout@v2    
     - name: hamer plan
-      run: make plan     
+      run: make plan
 
-  wcplumbingplan:
+  hamerapply:
     runs-on: ubuntu-latest
+    needs: hamerplan
     environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
-    
+      TERRAFORM_WORKSPACE: hamer
     steps:
+    - name: checkout
+    - uses: actions/checkout@v2    
+    - name: Hamer Apply
+      run: make applyAuto
+
+  wcplumbingplan:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      region: ${{secrets.AWS_REGION}}
+      SUBFOLDER: websites
+    steps:
+    - name: checkout
     - uses: actions/checkout@v2 
     - name: wcplumbing Plan
       env:
         TERRAFORM_WORKSPACE: wcplumbing
       run: make plan
+
+  wcplumbingapply:
+    runs-on: ubuntu-latest
+    needs: wcplumbingplan
+    environment: Hamer-prod
+    env:
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      region: ${{secrets.AWS_REGION}}
+      SUBFOLDER: websites
+    steps:
+    - name: checkout
+    - uses: actions/checkout@v2 
+    - name: wcplumbing Apply
+      env:
+        TERRAFORM_WORKSPACE: wcplumbing
+      run: make applyAuto
