@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  hamer.cloud plan:
+  hamer.cloud-plan:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -20,9 +20,9 @@ jobs:
     - name: hamer plan
       run: make plan
 
-  hamer.cloud apply:
+  hamer.cloud-apply:
     runs-on: ubuntu-latest
-    needs: hamer.cloud plan
+    needs: hamer.cloud-plan
     environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -35,7 +35,7 @@ jobs:
     - name: Hamer Apply
       run: make applyAuto
 
-  wcplumbing.com.au plan:
+  wcplumbing.com.au-plan:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -49,9 +49,9 @@ jobs:
         TERRAFORM_WORKSPACE: wcplumbing
       run: make plan
 
-  wcplumbing.com.au apply:
+  wcplumbing.com.au-apply:
     runs-on: ubuntu-latest
-    needs: wcplumbing.com.au plan
+    needs: wcplumbing.com.au-plan
     environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -65,7 +65,7 @@ jobs:
         TERRAFORM_WORKSPACE: wcplumbing
       run: make applyAuto
 
-  ThomasHamer VPC plan:
+  ThomasHamerVPC-plan:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -79,9 +79,9 @@ jobs:
         TERRAFORM_WORKSPACE: prod
       run: make plan
 
-  ThomasHamer VPC apply:
+  ThomasHamerVPC-apply:
     runs-on: ubuntu-latest
-    needs: ThomasHamer VPC plan
+    needs: ThomasHamerVPC-plan
     environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
