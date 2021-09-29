@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  hamerplan:
+  hamer.cloud plan:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -20,9 +20,9 @@ jobs:
     - name: hamer plan
       run: make plan
 
-  hamerapply:
+  hamer.cloud apply:
     runs-on: ubuntu-latest
-    needs: hamerplan
+    needs: hamer.cloud plan
     environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -35,7 +35,7 @@ jobs:
     - name: Hamer Apply
       run: make applyAuto
 
-  wcplumbingplan:
+  wcplumbing.com.au plan:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
@@ -49,9 +49,39 @@ jobs:
         TERRAFORM_WORKSPACE: wcplumbing
       run: make plan
 
-  wcplumbingapply:
+  wcplumbing.com.au apply:
     runs-on: ubuntu-latest
-    needs: wcplumbingplan
+    needs: wcplumbing.com.au plan
+    environment: Hamer-prod
+    env:
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      region: ${{secrets.AWS_REGION}}
+      SUBFOLDER: websites
+    steps:
+    - uses: actions/checkout@v2 
+    - name: wcplumbing Apply
+      env:
+        TERRAFORM_WORKSPACE: wcplumbing
+      run: make applyAuto
+
+  ThomasHamer VPC plan:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      region: ${{secrets.AWS_REGION}}
+      SUBFOLDER: vpc
+    steps:
+    - uses: actions/checkout@v2 
+    - name: VPC Plan
+      env:
+        TERRAFORM_WORKSPACE: prod
+      run: make plan
+
+  ThomasHamer VPC apply:
+    runs-on: ubuntu-latest
+    needs: ThomasHamer VPC plan
     environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
