@@ -7,24 +7,9 @@ on:
     branches: [ master ]
 
 jobs:
-  hamerinit:
-    runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
-      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-      region: ${{secrets.AWS_REGION}}
-      SUBFOLDER: websites
-    
-    steps:
-    - uses: actions/checkout@v2    
-    - name: hamer init
-      env:
-        TERRAFORM_WORKSPACE: hamer
-      run: make init       
-
   hamerplan:
-    needs: hamerinit
     runs-on: ubuntu-latest
+    environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
@@ -35,26 +20,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2    
     - name: hamer plan
-      run: make plan
-
-  wcplumbinginit:
-    runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
-      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-      region: ${{secrets.AWS_REGION}}
-      SUBFOLDER: websites
-    
-    steps:
-    - uses: actions/checkout@v2 
-    - name: wcplumning init
-      env:
-        TERRAFORM_WORKSPACE: wcplumbing
-      run: make init       
+      run: make plan     
 
   wcplumbingplan:
-    needs: wcplumbinginit
     runs-on: ubuntu-latest
+    environment: Hamer-prod
     env:
       AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
