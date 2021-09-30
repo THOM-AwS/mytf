@@ -1,12 +1,12 @@
 locals {
   env = {
     prod = {
-      aws_profile = "hamer"
-      aws_region  = "ap-southeast-2"
+      aws_profile      = "hamer"
+      aws_region       = "ap-southeast-2"
       name             = "Thomas-vpc"
       cidr             = "10.10.0.0/16"
       azs              = ["ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"]
-      public_subnets = ["10.10.0.0/24", "10.10.1.0/24", "10.10.2.0/24"]
+      public_subnets   = ["10.10.0.0/24", "10.10.1.0/24", "10.10.2.0/24"]
       private_subnets  = ["10.10.4.0/24", "10.10.5.0/24", "10.10.6.0/24"]
       database_subnets = ["10.10.8.0/24", "10.10.9.0/24", "10.10.10.0/24"]
       #intra_subnets         = ["10.10.12.0/24", "10.10.13.0/24", "10.10.14.0/24"]
