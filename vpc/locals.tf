@@ -36,7 +36,7 @@ locals {
             cidr_block  = "0.0.0.0/0"
           },
           {
-            rule_number = 901
+            rule_number = 1000
             rule_action = "allow"
             from_port   = 1024
             to_port     = 65535
@@ -62,7 +62,7 @@ locals {
             cidr_block  = "0.0.0.0/0"
           },
           {
-            rule_number = 900
+            rule_number = 1000
             rule_action = "allow"
             from_port   = 1024
             to_port     = 65535
@@ -80,13 +80,13 @@ locals {
         ]
         public_inbound = [
           {
-            rule_number = 100
+            rule_number = 110
             rule_action = "allow"
             protocol    = "-1"
             cidr_block  = "0.0.0.0/0"
           },
           {
-            rule_number = 101
+            rule_number = 111
             rule_action = "allow"
             protocol    = "-1"
             cidr_block  = "10.10.0.0/21"
@@ -94,13 +94,13 @@ locals {
         ]
         public_outbound = [
           {
-            rule_number = 100
+            rule_number = 110
             rule_action = "allow"
             protocol    = "-1"
             cidr_block  = "0.0.0.0/0"
           },
           {
-            rule_number = 101
+            rule_number = 111
             rule_action = "allow"
             protocol    = "-1"
             cidr_block  = "10.10.0.0/21"
@@ -108,7 +108,7 @@ locals {
         ]
         private_inbound = [
           {
-            rule_number = 100
+            rule_number = 110
             rule_action = "allow"
             protocol    = "-1"
             cidr_block  = "10.10.0.0/20"
@@ -116,7 +116,7 @@ locals {
         ]
         private_outbound = [
           {
-            rule_number = 100
+            rule_number = 110
             rule_action = "allow"
             protocol    = "-1"
             cidr_block  = "10.10.0.0/20"
