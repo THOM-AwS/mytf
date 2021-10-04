@@ -49,16 +49,24 @@ locals {
             icmp_type   = "-1"
             icmp_code   = "-1"
             protocol    = "1"
-            cidr_block  = "0.0.0.0/0"
+            cidr_block  = "10.10.0.0/16"
           },
         ]
         default_outbound = [
           {
             rule_number = 900
             rule_action = "allow"
-            from_port   = 32768
+            from_port   = 1024
             to_port     = 65535
             protocol    = "tcp"
+            cidr_block  = "0.0.0.0/0"
+          },
+          {
+            rule_number = 900
+            rule_action = "allow"
+            from_port   = 1024
+            to_port     = 65535
+            protocol    = "udp"
             cidr_block  = "0.0.0.0/0"
           },
           {
@@ -67,7 +75,7 @@ locals {
             icmp_type   = "-1"
             icmp_code   = "-1"
             protocol    = "1"
-            cidr_block  = "0.0.0.0/0"
+            cidr_block  = "10.10.0.0/16"
           },
         ]
         public_inbound = [
@@ -77,6 +85,12 @@ locals {
             protocol    = "-1"
             cidr_block  = "0.0.0.0/0"
           },
+          {
+            rule_number = 101
+            rule_action = "allow"
+            protocol    = "-1"
+            cidr_block  = "10.10.0.0/21"
+          },
         ]
         public_outbound = [
           {
@@ -85,13 +99,19 @@ locals {
             protocol    = "-1"
             cidr_block  = "0.0.0.0/0"
           },
+          {
+            rule_number = 101
+            rule_action = "allow"
+            protocol    = "-1"
+            cidr_block  = "10.10.0.0/21"
+          },
         ]
         private_inbound = [
           {
             rule_number = 100
             rule_action = "allow"
             protocol    = "-1"
-            cidr_block  = "0.0.0.0/0"
+            cidr_block  = "10.10.0.0/20"
           },
         ]
         private_outbound = [
@@ -99,7 +119,7 @@ locals {
             rule_number = 100
             rule_action = "allow"
             protocol    = "-1"
-            cidr_block  = "0.0.0.0/0"
+            cidr_block  = "10.10.0.0/20"
           },
         ]
         intra_inbound = [
