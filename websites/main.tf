@@ -6,5 +6,4 @@ module "aws-static-website" {
   tags = {
     "Stack" = local.workspace["domain_name"]
   }
-
 }
