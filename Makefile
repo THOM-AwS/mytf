@@ -12,36 +12,31 @@ init: .env
 plan: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform plan'
-	docker-compose run --rm terraform-utils sh -c 'rm -rf $${SUBFOLDER}/.terraform/modules'
 .PHONY: plan
 
 output: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform output user_secret_access_key'
-	docker-compose run --rm terraform-utils sh -c 'rm -rf $${SUBFOLDER}/.terraform/modules'
 .PHONY: output
 
 apply: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform apply'
-	docker-compose run --rm terraform-utils sh -c 'rm -rf $${SUBFOLDER}/.terraform/modules'
 .PHONY: apply
 
 applyAuto: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform apply -auto-approve'
-	docker-compose run --rm terraform-utils sh -c 'rm -rf $${SUBFOLDER}/.terraform/modules'
 .PHONY: applyAuto
 
 destroy: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform destroy -auto-approve'
-	docker-compose run --rm terraform-utils sh -c 'rm -rf $${SUBFOLDER}/.terraform/modules'
 .PHONY: destroy
 
 import_resources: .env workspace
 	docker-compose run --rm envvars ensure --tags terraform
-	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER};terraform import aws_iam_policy_attachment.awspolicy-attachment nscc-instance-role/arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER};terraform import ...'
 
 PHONY: plan
 
