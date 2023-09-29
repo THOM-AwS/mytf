@@ -143,10 +143,9 @@ resource "aws_api_gateway_integration_response" "data_post_default_response" {
 # ===========================================
 
 resource "aws_api_gateway_gateway_response" "default_4xx_response" {
-  rest_api_id       = aws_api_gateway_rest_api.generic_api.id
-  status            = 400
-  response_type     = "DEFAULT_4XX"
-  selection_pattern = "4\\d{2}"
+  rest_api_id   = aws_api_gateway_rest_api.generic_api.id
+  status_status_code = "400"
+  response_type = "DEFAULT_4XX"
   response_templates = {
     "application/json" = "{\"message\": \"$context.error.message\"}"
   }
@@ -171,10 +170,9 @@ resource "aws_api_gateway_gateway_response" "default_404_response" {
 }
 
 resource "aws_api_gateway_gateway_response" "default_5xx_response" {
-  rest_api_id       = aws_api_gateway_rest_api.generic_api.id
-  status_code       = "500"
-  response_type     = "DEFAULT_5XX"
-  selection_pattern = "5\\d{2}"
+  rest_api_id   = aws_api_gateway_rest_api.generic_api.id
+  status_code   = "500"
+  response_type = "DEFAULT_5XX"
   response_templates = {
     "application/json" = "{\"message\": \"An unexpected error occurred.\"}"
   }

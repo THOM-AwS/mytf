@@ -20,7 +20,7 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   request_templates = {
     "application/json" = <<-EOF
 {
-  "TableName": "${aws_dynamodb_table.generic_data_table.name}}",
+  "TableName": "${aws_dynamodb_table.generic_data.name}}",
   "Item": {
     "id": { "S": "$input.params('timestamp')" },
     "lat": { "S": "$input.params('lat')" },
