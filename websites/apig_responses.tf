@@ -144,7 +144,7 @@ resource "aws_api_gateway_integration_response" "data_post_default_response" {
 
 resource "aws_api_gateway_gateway_response" "default_4xx_response" {
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
-  status_status_code = "400"
+  status_code   = "400"
   response_type = "DEFAULT_4XX"
   response_templates = {
     "application/json" = "{\"message\": \"$context.error.message\"}"
