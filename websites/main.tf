@@ -7,3 +7,4 @@ module "aws-static-website" {
     "Stack" = local.workspace["domain_name"]
   }
 }
+data "aws_caller_identity" "current" {}
