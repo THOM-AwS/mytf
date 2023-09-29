@@ -2,7 +2,7 @@ resource "aws_api_gateway_deployment" "deploy_api" {
   depends_on = [
     aws_api_gateway_rest_api.generic_api,
     aws_api_gateway_integration.ddb_integration,
-    aws_api_gateway_integration_response.ddb_200_response,
+    aws_api_gateway_integration_response.data_post_200_response,
     aws_api_gateway_integration_response.root_mock_200_response
   ]
   rest_api_id = aws_api_gateway_rest_api.generic_api.id
@@ -30,7 +30,7 @@ resource "aws_api_gateway_account" "apigw_account" {
 }
 
 resource "aws_api_gateway_stage" "api_stage" {
-  depends_on    = [aws_cloudwatch_log_group.apigw_log_group, aws_api_gateway_deployment.deploy_api]
+  depends_on    = [aws_cloudwatch_log_group.apigw_log_group]
   deployment_id = aws_api_gateway_deployment.deploy_api.id
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
   stage_name    = "prod"
