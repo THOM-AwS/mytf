@@ -22,6 +22,7 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   resource_id             = aws_api_gateway_resource.generic_resource.id
   http_method             = aws_api_gateway_method.generic_post.http_method
   passthrough_behavior    = "NEVER"
+  content_handling        = "CONVERT_TO_TEXT"
   integration_http_method = "POST"
   uri                     = "arn:aws:apigateway:${local.workspace.aws_region}:dynamodb:action/PutItem"
   credentials             = aws_iam_role.api_gw_to_ddb.arn

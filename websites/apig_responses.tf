@@ -34,6 +34,9 @@ resource "aws_api_gateway_method_response" "data_post_400" {
   resource_id = aws_api_gateway_resource.generic_resource.id
   http_method = aws_api_gateway_method.generic_post.http_method
   status_code = "400"
+  response_parameters = {
+    "method.response.header.Content-Type" = true
+  }
   response_models = {
     "application/json" = "UnifiedResponseModel"
   }
@@ -44,6 +47,9 @@ resource "aws_api_gateway_method_response" "data_post_500" {
   resource_id = aws_api_gateway_resource.generic_resource.id
   http_method = aws_api_gateway_method.generic_post.http_method
   status_code = "500"
+  response_parameters = {
+    "method.response.header.Content-Type" = true
+  }
   response_models = {
     "application/json" = "UnifiedResponseModel"
   }
@@ -85,6 +91,12 @@ resource "aws_api_gateway_integration_response" "data_post_200_response" {
   response_parameters = {
     "method.response.header.Content-Type" = "'application/json'"
   }
+  response_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200,
+      message    = "Data successfully posted."
+    })
+  }
 }
 
 resource "aws_api_gateway_integration_response" "data_post_4XX_response" {
@@ -94,6 +106,15 @@ resource "aws_api_gateway_integration_response" "data_post_4XX_response" {
   http_method       = aws_api_gateway_method.generic_post.http_method
   status_code       = "400"
   selection_pattern = "4\\d{2}"
+  response_parameters = {
+    "method.response.header.Content-Type" = "'application/json'"
+  }
+  response_templates = {
+    "application/json" = jsonencode({
+      error   = "Bad Request",
+      message = "$input.path('$.errorMessage')"
+    })
+  }
 }
 
 resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
@@ -103,6 +124,9 @@ resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
   http_method       = aws_api_gateway_method.generic_post.http_method
   status_code       = "500"
   selection_pattern = "5\\d{2}"
+  response_parameters = {
+    "method.response.header.Content-Type" = "'application/json'"
+  }
   response_templates = {
     "application/json" = jsonencode({
       error   = "Unexpected Error",
@@ -112,11 +136,14 @@ resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
 }
 
 resource "aws_api_gateway_integration_response" "data_post_default_response" {
-  depends_on        = [aws_api_gateway_integration.ddb_integration]
-  rest_api_id       = aws_api_gateway_rest_api.generic_api.id
-  resource_id       = aws_api_gateway_resource.generic_resource.id
-  http_method       = aws_api_gateway_method.generic_post.http_method
-  status_code       = "500"
+  depends_on  = [aws_api_gateway_integration.ddb_integration]
+  rest_api_id = aws_api_gateway_rest_api.generic_api.id
+  resource_id = aws_api_gateway_resource.generic_resource.id
+  http_method = aws_api_gateway_method.generic_post.http_method
+  status_code = "500"
+  response_parameters = {
+    "method.response.header.Content-Type" = "'application/json'"
+  }
   selection_pattern = ""
 
   response_templates = {
