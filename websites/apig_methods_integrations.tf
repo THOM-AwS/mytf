@@ -4,36 +4,61 @@ resource "aws_api_gateway_method" "generic_post" {
   resource_id   = aws_api_gateway_resource.generic_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  request_parameters = {
+    "method.request.header.Content-Type" = true
+    # "method.request.querystring.lat"       = true
+    # "method.request.querystring.lon"       = true
+    # "method.request.querystring.timestamp" = true
+  }
+  request_models = {
+    "application/x-www-form-urlencoded" = "UnifiedResponseModel",
+    "application/json"                  = "UnifiedResponseModel"
+  }
 }
 
 resource "aws_api_gateway_integration" "ddb_integration" {
-  depends_on  = [aws_api_gateway_method.generic_post]
-  rest_api_id = aws_api_gateway_rest_api.generic_api.id
-  resource_id = aws_api_gateway_resource.generic_resource.id
-  http_method = aws_api_gateway_method.generic_post.http_method
-
-  type                    = "AWS"
+  depends_on              = [aws_api_gateway_method.generic_post]
+  rest_api_id             = aws_api_gateway_rest_api.generic_api.id
+  resource_id             = aws_api_gateway_resource.generic_resource.id
+  http_method             = aws_api_gateway_method.generic_post.http_method
+  passthrough_behavior    = "NEVER"
   integration_http_method = "POST"
   uri                     = "arn:aws:apigateway:${local.workspace.aws_region}:dynamodb:action/PutItem"
   credentials             = aws_iam_role.api_gw_to_ddb.arn
-
+  type                    = "AWS"
   request_templates = {
+    "application/json" = <<-EOF
+{
+   "TableName": "${aws_dynamodb_table.generic_data.name}",
+   "Item": {
+      "lon": {
+         "N": "$input.path('$.lon')"
+      },
+      "lat": {
+         "N": "$input.path('$.lat')"
+      },
+      "timestamp": {
+         "N": "$input.path('$.timestamp')"
+      }
+   }
+}
+EOF
+
     "application/x-www-form-urlencoded" = <<-EOF
 {
    "TableName": "${aws_dynamodb_table.generic_data.name}",
    "Item": {
-    "lon": {
-      "N": "$input.params('lon')"
-    },
-    "lat": {
-      "N": "$input.params('lat')"
-    },
-    "timestamp": {
-      "N": "$input.params('timestamp')"
-    }
-  }
+      "lon": {
+         "N": "$input.params('$.lon')"
+      },
+      "lat": {
+         "N": "$input.params('$.lat')"
+      },
+      "timestamp": {
+         "N": "$input.params('$.timestamp')"
+      }
+   }
 }
-
 EOF
   }
 }
@@ -55,7 +80,7 @@ resource "aws_api_gateway_integration" "root_mock_integration" {
   type = "MOCK"
 
   request_templates = {
-    "application/x-www-form-urlencoded" = jsonencode({
+    "application/json" = jsonencode({
       statusCode = 200
     })
   }

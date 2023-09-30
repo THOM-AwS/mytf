@@ -6,8 +6,7 @@ resource "aws_dynamodb_table" "generic_data" {
 
   attribute {
     name = "timestamp"
-    type = "S"
+    type = "N"
   }
-
   hash_key = "timestamp"
 }
