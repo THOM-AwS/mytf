@@ -13,7 +13,7 @@ resource "aws_api_gateway_method_response" "root_get_200" {
     "method.response.header.Content-Type" = true
   }
   response_models = {
-    "application/json" = aws_api_gateway_model.ResponseModel.name
+    "application/x-www-form-urlencoded" = aws_api_gateway_model.ResponseModel.name
   }
 }
 
@@ -35,7 +35,7 @@ resource "aws_api_gateway_method_response" "data_post_400" {
   http_method = aws_api_gateway_method.generic_post.http_method
   status_code = "400"
   response_models = {
-    "application/json" = "Client Error"
+    "application/x-www-form-urlencoded" = "ClientErrorModel"
   }
 }
 
@@ -45,7 +45,7 @@ resource "aws_api_gateway_method_response" "data_post_500" {
   http_method = aws_api_gateway_method.generic_post.http_method
   status_code = "500"
   response_models = {
-    "application/json" = aws_api_gateway_model.ServerErrorModel.name
+    "application/x-www-form-urlencoded" = aws_api_gateway_model.ServerErrorModel.name
   }
 }
 
@@ -63,10 +63,10 @@ resource "aws_api_gateway_integration_response" "root_mock_200_response" {
   status_code       = "200"
   selection_pattern = "2\\d{2}"
   response_parameters = {
-    "method.response.header.Content-Type" = "'application/json'"
+    "method.response.header.Content-Type" = "'application/x-www-form-urlencoded'"
   }
   response_templates = {
-    "application/json" = jsonencode({
+    "application/x-www-form-urlencoded" = jsonencode({
       statusCode = 200,
       message    = "Hello from your API at hamer.cloud."
     })
@@ -83,10 +83,10 @@ resource "aws_api_gateway_integration_response" "data_post_200_response" {
   status_code       = "200"
   selection_pattern = "2\\d{2}"
   response_parameters = {
-    "method.response.header.Content-Type" = "'application/json'"
+    "method.response.header.Content-Type" = "'application/x-www-form-urlencoded'"
   }
   #   response_templates = {
-  #     "application/json" = <<-EOF
+  #     "application/x-www-form-urlencoded" = <<-EOF
   # {
   #   "statusCode": $input.json('$.statusCode'),
   #   "message": $input.json('$.message'),
@@ -108,7 +108,10 @@ resource "aws_api_gateway_integration_response" "data_post_4XX_response" {
   status_code       = "400"
   selection_pattern = "4\\d{2}"
   response_templates = {
-    "application/json" = "{\"error\": \"Client Error\"}"
+    "application/x-www-form-urlencoded" = jsonencode({
+      error   = "Bad Request",
+      message = "$input.path('$.errorMessage')"
+    })
   }
 }
 
@@ -120,7 +123,10 @@ resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
   status_code       = "500"
   selection_pattern = "5\\d{2}"
   response_templates = {
-    "application/json" = "{\"error\": \"Server Error\"}"
+    "application/x-www-form-urlencoded" = jsonencode({
+      error   = "Unexpected Error",
+      message = "$input.path('$.errorMessage')"
+    })
   }
 }
 
@@ -132,7 +138,7 @@ resource "aws_api_gateway_integration_response" "data_post_default_response" {
   selection_pattern = ""
 
   response_templates = {
-    "application/json" = "{\"error\": \"Unexpected Error\", \"message\": \"$input.path('$.errorMessage')\"}"
+    "application/x-www-form-urlencoded" = "{\"error\": \"Unexpected Error\", \"message\": \"$input.path('$.errorMessage')\"}"
   }
 }
 
@@ -147,7 +153,7 @@ resource "aws_api_gateway_gateway_response" "default_4xx_response" {
   status_code   = "400"
   response_type = "DEFAULT_4XX"
   response_templates = {
-    "application/json" = "{\"message\": \"$context.error.message\"}"
+    "application/x-www-form-urlencoded" = "{\"message\": \"$context.error.message\"}"
   }
 }
 
@@ -156,7 +162,7 @@ resource "aws_api_gateway_gateway_response" "default_403_response" {
   status_code   = "403"
   response_type = "ACCESS_DENIED"
   response_templates = {
-    "application/json" = "{\"message\": \"Access Denied\"}"
+    "application/x-www-form-urlencoded" = "{\"message\": \"Access Denied\"}"
   }
 }
 
@@ -165,7 +171,7 @@ resource "aws_api_gateway_gateway_response" "default_404_response" {
   status_code   = "404"
   response_type = "RESOURCE_NOT_FOUND"
   response_templates = {
-    "application/json" = "{\"message\": \"Not Found\"}"
+    "application/x-www-form-urlencoded" = "{\"message\": \"Not Found\"}"
   }
 }
 
@@ -174,7 +180,7 @@ resource "aws_api_gateway_gateway_response" "default_5xx_response" {
   status_code   = "500"
   response_type = "DEFAULT_5XX"
   response_templates = {
-    "application/json" = "{\"message\": \"An unexpected error occurred.\"}"
+    "application/x-www-form-urlencoded" = "{\"message\": \"An unexpected error occurred.\"}"
   }
 }
 

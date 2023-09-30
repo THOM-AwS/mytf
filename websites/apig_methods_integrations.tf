@@ -18,14 +18,23 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   credentials             = aws_iam_role.api_gw_to_ddb.arn
 
   request_templates = {
-    "application/json" = <<-EOF
+    "application/x-www-form-urlencoded" = <<-EOF
 {
-  "TableName": "${aws_dynamodb_table.generic_data.name}}",
-  "Item": {
-    "id": { "S": "$input.params('timestamp')" },
-    "lat": { "S": "$input.params('lat')" },
-    "lon": { "S": "$input.params('lon')" }
-  }
+   "TableName": "YourTableName",
+   "Item": {
+       "yourPrimaryKeyAttributeName": {
+           "S": "$input.path('$.yourPrimaryKeyAttribute')"
+       },
+       "lon": {
+           "N": "$input.path('$.lon')"
+       },
+       "lat": {
+           "N": "$input.path('$.lat')"
+       },
+       "timestamp": {
+           "N": "$input.path('$.timestamp')"
+       }
+   }
 }
 EOF
   }
@@ -48,7 +57,7 @@ resource "aws_api_gateway_integration" "root_mock_integration" {
   type = "MOCK"
 
   request_templates = {
-    "application/json" = jsonencode({
+    "application/x-www-form-urlencoded" = jsonencode({
       statusCode = 200
     })
   }
