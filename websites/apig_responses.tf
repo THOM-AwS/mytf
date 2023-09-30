@@ -63,7 +63,7 @@ resource "aws_api_gateway_integration_response" "root_mock_200_response" {
   status_code       = "200"
   selection_pattern = "2\\d{2}"
   response_parameters = {
-    "method.response.header.Content-Type" = "'application/x-www-form-urlencoded'"
+    "method.response.header.Content-Type" = "'application/json'"
   }
   response_templates = {
     "application/x-www-form-urlencoded" = jsonencode({
@@ -83,7 +83,7 @@ resource "aws_api_gateway_integration_response" "data_post_200_response" {
   status_code       = "200"
   selection_pattern = "2\\d{2}"
   response_parameters = {
-    "method.response.header.Content-Type" = "'application/x-www-form-urlencoded'"
+    "method.response.header.Content-Type" = "'application/json'"
   }
   #   response_templates = {
   #     "application/x-www-form-urlencoded" = <<-EOF

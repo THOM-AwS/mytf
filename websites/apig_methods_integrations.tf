@@ -20,22 +20,20 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   request_templates = {
     "application/x-www-form-urlencoded" = <<-EOF
 {
-   "TableName": "YourTableName",
+   "TableName": "${aws_dynamodb_table.generic_data.name}",
    "Item": {
-       "yourPrimaryKeyAttributeName": {
-           "S": "$input.path('$.yourPrimaryKeyAttribute')"
-       },
-       "lon": {
-           "N": "$input.path('$.lon')"
-       },
-       "lat": {
-           "N": "$input.path('$.lat')"
-       },
-       "timestamp": {
-           "N": "$input.path('$.timestamp')"
-       }
-   }
+    "lon": {
+      "N": "$input.params('lon')"
+    },
+    "lat": {
+      "N": "$input.params('lat')"
+    },
+    "timestamp": {
+      "N": "$input.params('timestamp')"
+    }
+  }
 }
+
 EOF
   }
 }
