@@ -9,16 +9,17 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   uri                     = "arn:aws:apigateway:${local.workspace.aws_region}:dynamodb:action/PutItem"
   credentials             = aws_iam_role.api_gw_to_ddb.arn
   type                    = "AWS"
+
   request_templates = {
     "application/json" = <<-EOF
     {
       "TableName": "${aws_dynamodb_table.generic_data.name}",
       "Item": {
         "lon": {
-          "N": "$input.json('$.lon')"
+          "S": "$input.json('$.lon')"
         },
         "lat": {
-          "N": "$input.json('$.lat')"
+          "S": "$input.json('$.lat')"
         },
         "timestamp": {
           "S": "$input.json('$.timestamp')"
@@ -28,39 +29,40 @@ resource "aws_api_gateway_integration" "ddb_integration" {
     EOF
 
     "application/x-www-form-urlencoded" = <<-EOF
-    {
-        $util.log("Starting processing input body...")
-        #foreach( $token in $input.body.split('&') )
-            $util.log("Current token: $token")
-            
-            #set( $keyVal = $token.split('=') )
-            #set( $keyValSize = $keyVal.size() )
-            $util.log("Split token into key and value. KeyValSize: $keyValSize")
-            
-            #if( $keyValSize >= 1 && !$keyVal[0].isEmpty() )
-                #set( $key = $util.urlDecode($keyVal[0]) )
-                $util.log("Decoded key: $key")
-                
-                #set($key = $key.substring(0,1).toLowerCase() + $key.substring(1))
-                $util.log("Processed key with first letter lower-cased: $key")
-                
-                #if( $keyValSize >= 2 )
-                    #set( $val = $util.urlDecode($keyVal[1]) )
-                    $util.log("Decoded value: $val")
-                #else
-                    #set( $val = '' )
-                    $util.log("No value found for key. Setting value to empty.")
-                #end
-                "$key": "$util.escapeJavaScript($val)"#if($foreach.hasNext),#end
-            #else
-                $util.log("Error processing token: $token. Either key is missing or empty.")
-            #end
-        #end
-        $util.log("Finished processing input body.")
+#set($params = $input.path('$').split("&"))
+{
+  "TableName": "${aws_dynamodb_table.generic_data.name}",
+  "Item": {
+    "lon": {
+      "S": "$!params[0].split('=')[1]"
+    },
+    "lat": {
+      "S": "$!params[1].split('=')[1]"
+    },
+    "timestamp": {
+      "S": "$!params[2].split('=')[1]"
     }
+  }
+}
+
     EOF
   }
 }
+
+resource "aws_api_gateway_method" "generic_post" {
+  depends_on    = [aws_api_gateway_resource.generic_resource]
+  rest_api_id   = aws_api_gateway_rest_api.generic_api.id
+  resource_id   = aws_api_gateway_resource.generic_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+  request_parameters = {
+    "method.request.header.Content-Type" = true
+  }
+  request_models = {
+    "application/x-www-form-urlencoded" = aws_api_gateway_model.location_data.name
+  }
+}
+
 resource "aws_api_gateway_method_response" "data_post_400" {
   rest_api_id = aws_api_gateway_rest_api.generic_api.id
   resource_id = aws_api_gateway_resource.generic_resource.id
@@ -176,7 +178,7 @@ resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
   resource_id       = aws_api_gateway_resource.generic_resource.id
   http_method       = aws_api_gateway_method.generic_post.http_method
   status_code       = "500"
-  selection_pattern = ""
+  selection_pattern = "5//d{2}"
   response_parameters = {
     "method.response.header.Content-Type" = "'application/json'"
   }

@@ -13,23 +13,6 @@ resource "aws_api_gateway_integration" "root_mock_integration" {
   }
 }
 
-resource "aws_api_gateway_method" "generic_post" {
-  depends_on    = [aws_api_gateway_resource.generic_resource]
-  rest_api_id   = aws_api_gateway_rest_api.generic_api.id
-  resource_id   = aws_api_gateway_resource.generic_resource.id
-  http_method   = "POST"
-  authorization = "NONE"
-  request_parameters = {
-    "method.request.header.Content-Type"   = true
-    "method.request.querystring.lat"       = true
-    "method.request.querystring.lon"       = true
-    "method.request.querystring.timestamp" = true
-  }
-  request_models = {
-    "application/x-www-form-urlencoded" = "UnifiedResponseModel",
-    "application/json"                  = "UnifiedResponseModel"
-  }
-}
 resource "aws_api_gateway_method" "root_get" {
   depends_on    = [aws_api_gateway_rest_api.generic_api]
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
