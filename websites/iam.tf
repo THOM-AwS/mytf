@@ -31,7 +31,7 @@ resource "aws_iam_role_policy" "api_gw_ddb_access" {
           "dynamodb:Scan"
         ],
         Effect   = "Allow",
-        Resource = aws_dynamodb_table.generic_data.arn
+        Resource = "*" #aws_dynamodb_table.generic_data.arn
       }
     ]
   })

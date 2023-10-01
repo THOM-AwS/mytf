@@ -3,6 +3,14 @@ resource "aws_api_gateway_model" "UnifiedResponseModel" {
   name         = "UnifiedResponseModel"
   content_type = "application/json"
   schema = jsonencode({
-    type = "object"
+    type = "object",
+    properties = {
+      statusCode = {
+        type = "integer"
+      },
+      message = {
+        type = "string"
+      }
+    }
   })
 }
