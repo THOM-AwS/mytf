@@ -12,25 +12,33 @@ resource "aws_api_gateway_integration" "ddb_integration" {
 
   request_templates = {
     "application/json" = <<-EOF
+#set($decoded = $util.urlDecode($input.body))
+#set($params = {})
+#foreach($param in $decoded.split("&"))
+    #set($keyValue = $param.split("="))
+    #set($params[$keyValue[0]] = $keyValue[1])
+#end
+
 {
     "TableName": "${aws_dynamodb_table.generic_data.name}",
     "Item": {
+        "longitude": {
+            "N": "$params.lon"
+        },
+        "latitude": {
+            "N": "$params.lat"
+        },
         "timestamp": {
-            "S": "$input.params('timestamp')"
-        },
-        "lon": {
-            "S": "$input.params('lon')"
-        },
-        "lat": {
-            "S": "$input.params('lat')"
+            "S": "$params.timestamp"
         }
-    },
-    "debug": {
-        "timestamp": "$input.params('timestamp')",
-        "lon": "$input.params('lon')",
-        "lat": "$input.params('lat')",
+    }
+},
+  "debug": {
+        "timestamp": "$params.timestamp",
+        "decoded_lon": "$params.lon",
+        "decoded_lat": "$params.lat",
+        "decoded_body": $util.escapeJavaScript($decoded),
         "request": {
-            "body": "$util.escapeJavaScript($input.json('$'))",
             "parameters": "$util.escapeJavaScript($input.params())"
         }
     }
