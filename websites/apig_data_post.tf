@@ -16,19 +16,19 @@ resource "aws_api_gateway_integration" "ddb_integration" {
     "TableName": "${aws_dynamodb_table.generic_data.name}",
     "Item": {
         "timestamp": {
-            "N": "$input.path('$.timestamp')"
+            "S": "$input.params('timestamp')"
         },
         "lon": {
-            "N": "$input.path('$.lon')"
+            "S": "$input.params('lon')"
         },
         "lat": {
-            "N": "$input.path('$.lat')"
+            "S": "$input.params('lat')"
         }
     },
     "debug": {
-        "timestamp": "$input.path('$.timestamp')",
-        "lon": "$input.path('$.lon')",
-        "lat": "$input.path('$.lat')",
+        "timestamp": "$input.params('timestamp')",
+        "lon": "$input.params('lon')",
+        "lat": "$input.params('lat')",
         "request": {
             "body": "$util.escapeJavaScript($input.json('$'))",
             "parameters": "$util.escapeJavaScript($input.params())"
