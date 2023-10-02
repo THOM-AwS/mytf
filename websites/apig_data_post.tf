@@ -15,32 +15,18 @@ resource "aws_api_gateway_integration" "ddb_integration" {
 {
     "TableName": "${aws_dynamodb_table.generic_data.name}",
     "Item": {
-        "lat": {
-            "S": "$input.path('$.datastring')"
-        },
         "timestamp": {
-            "S": "$input.path("TIMESTAMP HERE")"
+            "N": "$util.urlDecode($input.params('timestamp'))"
+        },
+        "lon": {
+            "N": "$util.urlDecode($input.params('lon'))"
+        },
+        "lat": {
+            "N": "$util.urlDecode($input.params('lat'))"
         }
     }
 }
 EOF
-
-    #     "application/json" = <<-EOF
-    # {
-    #     "TableName": "${aws_dynamodb_table.generic_data.name}",
-    #     "Item": {
-    #         "lon": {
-    #             "N": "$input.json('$.lon')"
-    #         },
-    #         "lat": {
-    #             "N": "$input.json('$.lat')"
-    #         },
-    #         "timestamp": {
-    #             "S": "$input.json('$.timestamp')"
-    #         }
-    #     }
-    # }
-    # EOF
   }
 }
 
@@ -115,55 +101,15 @@ resource "aws_api_gateway_integration_response" "data_post_4XX_response" {
     "application/json" = jsonencode({
       "timestamp" : "$context.requestTime",
       "request" : {
-        "stage" : "$context.stage",
-        "request_id" : "$context.requestId",
-        "api_id" : "$context.apiId",
-        "resource_path" : "$context.resourcePath",
-        "http_method" : "$context.httpMethod",
-        "source_ip" : "$context.identity.sourceIp",
-        "user-agent" : "$context.identity.userAgent",
-        "account_id" : "$context.identity.accountId",
-        "caller" : "$context.identity.caller",
-        "user" : "$context.identity.user",
-        "api_key" : "$context.identity.apiKey",
-        "user_arn" : "$context.identity.userArn",
         "body" : "$util.escapeJavaScript($input.json('$'))",
         "parameters" : "$util.escapeJavaScript($input.params())",
-        "stage_variables" : {
-          "example_variable" : "$stageVariables.example_variable"
-        }
       },
       "response" : {
         "status" : "$context.status",
-        "response_length" : "$context.responseLength",
-        "response_latency" : "$context.responseLatency",
         "error_message_input" : "$input.path('$.errorMessage')",
         "status_code_input" : "$input.path('$.statusCode')",
         "error_message_context" : "$context.error.message"
       },
-      "errors" : {
-        "authorizer" : {
-          "error" : "$context.authorizer.error",
-          "status" : "$context.authorizer.status"
-        },
-        "authentication" : {
-          "error" : "$context.authenticate.error",
-          "status" : "$context.authenticate.status"
-        },
-        "integration" : {
-          "error" : "$context.integration.error",
-          "status" : "$context.integration.status"
-        }
-      },
-      "metrics" : {
-        "authorization_latency" : "$context.authorize.latency",
-        "authorizer_latency" : "$context.authorizer.latency",
-        "authentication_latency" : "$context.authenticate.latency",
-        "integration_latency" : "$context.integration.latency"
-      },
-      "trace" : {
-        "xray_trace_id" : "$context.xrayTraceId"
-      }
       }
     )
   }
@@ -182,59 +128,20 @@ resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
     "application/json" = jsonencode({
       "timestamp" : "$context.requestTime",
       "request" : {
-        "stage" : "$context.stage",
-        "request_id" : "$context.requestId",
-        "api_id" : "$context.apiId",
-        "resource_path" : "$context.resourcePath",
-        "http_method" : "$context.httpMethod",
-        "source_ip" : "$context.identity.sourceIp",
-        "user-agent" : "$context.identity.userAgent",
-        "account_id" : "$context.identity.accountId",
-        "caller" : "$context.identity.caller",
-        "user" : "$context.identity.user",
-        "api_key" : "$context.identity.apiKey",
-        "user_arn" : "$context.identity.userArn",
         "body" : "$util.escapeJavaScript($input.json('$'))",
         "parameters" : "$util.escapeJavaScript($input.params())",
-        "stage_variables" : {
-          "example_variable" : "$stageVariables.example_variable"
-        }
       },
       "response" : {
         "status" : "$context.status",
-        "response_length" : "$context.responseLength",
-        "response_latency" : "$context.responseLatency",
         "error_message_input" : "$input.path('$.errorMessage')",
         "status_code_input" : "$input.path('$.statusCode')",
         "error_message_context" : "$context.error.message"
       },
-      "errors" : {
-        "authorizer" : {
-          "error" : "$context.authorizer.error",
-          "status" : "$context.authorizer.status"
-        },
-        "authentication" : {
-          "error" : "$context.authenticate.error",
-          "status" : "$context.authenticate.status"
-        },
-        "integration" : {
-          "error" : "$context.integration.error",
-          "status" : "$context.integration.status"
-        }
-      },
-      "metrics" : {
-        "authorization_latency" : "$context.authorize.latency",
-        "authorizer_latency" : "$context.authorizer.latency",
-        "authentication_latency" : "$context.authenticate.latency",
-        "integration_latency" : "$context.integration.latency"
-      },
-      "trace" : {
-        "xray_trace_id" : "$context.xrayTraceId"
-      }
       }
     )
   }
 }
+
 resource "aws_api_gateway_gateway_response" "default_4xx_response" {
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
   status_code   = "400"
@@ -243,55 +150,15 @@ resource "aws_api_gateway_gateway_response" "default_4xx_response" {
     "application/json" = jsonencode({
       "timestamp" : "$context.requestTime",
       "request" : {
-        "stage" : "$context.stage",
-        "request_id" : "$context.requestId",
-        "api_id" : "$context.apiId",
-        "resource_path" : "$context.resourcePath",
-        "http_method" : "$context.httpMethod",
-        "source_ip" : "$context.identity.sourceIp",
-        "user-agent" : "$context.identity.userAgent",
-        "account_id" : "$context.identity.accountId",
-        "caller" : "$context.identity.caller",
-        "user" : "$context.identity.user",
-        "api_key" : "$context.identity.apiKey",
-        "user_arn" : "$context.identity.userArn",
         "body" : "$util.escapeJavaScript($input.json('$'))",
         "parameters" : "$util.escapeJavaScript($input.params())",
-        "stage_variables" : {
-          "example_variable" : "$stageVariables.example_variable"
-        }
       },
       "response" : {
         "status" : "$context.status",
-        "response_length" : "$context.responseLength",
-        "response_latency" : "$context.responseLatency",
         "error_message_input" : "$input.path('$.errorMessage')",
         "status_code_input" : "$input.path('$.statusCode')",
         "error_message_context" : "$context.error.message"
       },
-      "errors" : {
-        "authorizer" : {
-          "error" : "$context.authorizer.error",
-          "status" : "$context.authorizer.status"
-        },
-        "authentication" : {
-          "error" : "$context.authenticate.error",
-          "status" : "$context.authenticate.status"
-        },
-        "integration" : {
-          "error" : "$context.integration.error",
-          "status" : "$context.integration.status"
-        }
-      },
-      "metrics" : {
-        "authorization_latency" : "$context.authorize.latency",
-        "authorizer_latency" : "$context.authorizer.latency",
-        "authentication_latency" : "$context.authenticate.latency",
-        "integration_latency" : "$context.integration.latency"
-      },
-      "trace" : {
-        "xray_trace_id" : "$context.xrayTraceId"
-      }
       }
     )
   }
@@ -304,55 +171,15 @@ resource "aws_api_gateway_gateway_response" "default_403_response" {
     "application/json" = jsonencode({
       "timestamp" : "$context.requestTime",
       "request" : {
-        "stage" : "$context.stage",
-        "request_id" : "$context.requestId",
-        "api_id" : "$context.apiId",
-        "resource_path" : "$context.resourcePath",
-        "http_method" : "$context.httpMethod",
-        "source_ip" : "$context.identity.sourceIp",
-        "user-agent" : "$context.identity.userAgent",
-        "account_id" : "$context.identity.accountId",
-        "caller" : "$context.identity.caller",
-        "user" : "$context.identity.user",
-        "api_key" : "$context.identity.apiKey",
-        "user_arn" : "$context.identity.userArn",
         "body" : "$util.escapeJavaScript($input.json('$'))",
         "parameters" : "$util.escapeJavaScript($input.params())",
-        "stage_variables" : {
-          "example_variable" : "$stageVariables.example_variable"
-        }
       },
       "response" : {
         "status" : "$context.status",
-        "response_length" : "$context.responseLength",
-        "response_latency" : "$context.responseLatency",
         "error_message_input" : "$input.path('$.errorMessage')",
         "status_code_input" : "$input.path('$.statusCode')",
         "error_message_context" : "$context.error.message"
       },
-      "errors" : {
-        "authorizer" : {
-          "error" : "$context.authorizer.error",
-          "status" : "$context.authorizer.status"
-        },
-        "authentication" : {
-          "error" : "$context.authenticate.error",
-          "status" : "$context.authenticate.status"
-        },
-        "integration" : {
-          "error" : "$context.integration.error",
-          "status" : "$context.integration.status"
-        }
-      },
-      "metrics" : {
-        "authorization_latency" : "$context.authorize.latency",
-        "authorizer_latency" : "$context.authorizer.latency",
-        "authentication_latency" : "$context.authenticate.latency",
-        "integration_latency" : "$context.integration.latency"
-      },
-      "trace" : {
-        "xray_trace_id" : "$context.xrayTraceId"
-      }
       }
     )
   }
@@ -366,55 +193,15 @@ resource "aws_api_gateway_gateway_response" "default_404_response" {
     "application/json" = jsonencode({
       "timestamp" : "$context.requestTime",
       "request" : {
-        "stage" : "$context.stage",
-        "request_id" : "$context.requestId",
-        "api_id" : "$context.apiId",
-        "resource_path" : "$context.resourcePath",
-        "http_method" : "$context.httpMethod",
-        "source_ip" : "$context.identity.sourceIp",
-        "user-agent" : "$context.identity.userAgent",
-        "account_id" : "$context.identity.accountId",
-        "caller" : "$context.identity.caller",
-        "user" : "$context.identity.user",
-        "api_key" : "$context.identity.apiKey",
-        "user_arn" : "$context.identity.userArn",
         "body" : "$util.escapeJavaScript($input.json('$'))",
         "parameters" : "$util.escapeJavaScript($input.params())",
-        "stage_variables" : {
-          "example_variable" : "$stageVariables.example_variable"
-        }
       },
       "response" : {
         "status" : "$context.status",
-        "response_length" : "$context.responseLength",
-        "response_latency" : "$context.responseLatency",
         "error_message_input" : "$input.path('$.errorMessage')",
         "status_code_input" : "$input.path('$.statusCode')",
         "error_message_context" : "$context.error.message"
       },
-      "errors" : {
-        "authorizer" : {
-          "error" : "$context.authorizer.error",
-          "status" : "$context.authorizer.status"
-        },
-        "authentication" : {
-          "error" : "$context.authenticate.error",
-          "status" : "$context.authenticate.status"
-        },
-        "integration" : {
-          "error" : "$context.integration.error",
-          "status" : "$context.integration.status"
-        }
-      },
-      "metrics" : {
-        "authorization_latency" : "$context.authorize.latency",
-        "authorizer_latency" : "$context.authorizer.latency",
-        "authentication_latency" : "$context.authenticate.latency",
-        "integration_latency" : "$context.integration.latency"
-      },
-      "trace" : {
-        "xray_trace_id" : "$context.xrayTraceId"
-      }
       }
     )
   }
@@ -427,55 +214,15 @@ resource "aws_api_gateway_gateway_response" "default_5xx_response" {
     "application/json" = jsonencode({
       "timestamp" : "$context.requestTime",
       "request" : {
-        "stage" : "$context.stage",
-        "request_id" : "$context.requestId",
-        "api_id" : "$context.apiId",
-        "resource_path" : "$context.resourcePath",
-        "http_method" : "$context.httpMethod",
-        "source_ip" : "$context.identity.sourceIp",
-        "user-agent" : "$context.identity.userAgent",
-        "account_id" : "$context.identity.accountId",
-        "caller" : "$context.identity.caller",
-        "user" : "$context.identity.user",
-        "api_key" : "$context.identity.apiKey",
-        "user_arn" : "$context.identity.userArn",
         "body" : "$util.escapeJavaScript($input.json('$'))",
         "parameters" : "$util.escapeJavaScript($input.params())",
-        "stage_variables" : {
-          "example_variable" : "$stageVariables.example_variable"
-        }
       },
       "response" : {
         "status" : "$context.status",
-        "response_length" : "$context.responseLength",
-        "response_latency" : "$context.responseLatency",
         "error_message_input" : "$input.path('$.errorMessage')",
         "status_code_input" : "$input.path('$.statusCode')",
         "error_message_context" : "$context.error.message"
       },
-      "errors" : {
-        "authorizer" : {
-          "error" : "$context.authorizer.error",
-          "status" : "$context.authorizer.status"
-        },
-        "authentication" : {
-          "error" : "$context.authenticate.error",
-          "status" : "$context.authenticate.status"
-        },
-        "integration" : {
-          "error" : "$context.integration.error",
-          "status" : "$context.integration.status"
-        }
-      },
-      "metrics" : {
-        "authorization_latency" : "$context.authorize.latency",
-        "authorizer_latency" : "$context.authorizer.latency",
-        "authentication_latency" : "$context.authenticate.latency",
-        "integration_latency" : "$context.integration.latency"
-      },
-      "trace" : {
-        "xray_trace_id" : "$context.xrayTraceId"
-      }
       }
     )
   }
