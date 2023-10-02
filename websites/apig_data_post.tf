@@ -11,18 +11,27 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   type                    = "AWS"
 
   request_templates = {
-    "application/x-www-form-urlencoded" = <<-EOF
+    "application/json" = <<-EOF
 {
     "TableName": "${aws_dynamodb_table.generic_data.name}",
     "Item": {
         "timestamp": {
-            "N": "$util.urlDecode($input.params('timestamp'))"
+            "N": "$input.path('$.timestamp')"
         },
         "lon": {
-            "N": "$util.urlDecode($input.params('lon'))"
+            "N": "$input.path('$.lon')"
         },
         "lat": {
-            "N": "$util.urlDecode($input.params('lat'))"
+            "N": "$input.path('$.lat')"
+        }
+    },
+    "debug": {
+        "timestamp": "$input.path('$.timestamp')",
+        "lon": "$input.path('$.lon')",
+        "lat": "$input.path('$.lat')",
+        "request": {
+            "body": "$util.escapeJavaScript($input.json('$'))",
+            "parameters": "$util.escapeJavaScript($input.params())"
         }
     }
 }
