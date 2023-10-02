@@ -1,53 +1,49 @@
 resource "aws_api_gateway_integration" "ddb_integration" {
-  depends_on              = [aws_api_gateway_method.generic_post]
-  rest_api_id             = aws_api_gateway_rest_api.generic_api.id
-  resource_id             = aws_api_gateway_resource.generic_resource.id
-  http_method             = aws_api_gateway_method.generic_post.http_method
-  passthrough_behavior    = "NEVER"
-  content_handling        = "CONVERT_TO_TEXT"
+  depends_on           = [aws_api_gateway_method.generic_post]
+  rest_api_id          = aws_api_gateway_rest_api.generic_api.id
+  resource_id          = aws_api_gateway_resource.generic_resource.id
+  http_method          = aws_api_gateway_method.generic_post.http_method
+  passthrough_behavior = "WHEN_NO_MATCH"
+  # content_handling        = "CONVERT_TO_TEXT"
   integration_http_method = "POST"
   uri                     = "arn:aws:apigateway:${local.workspace.aws_region}:dynamodb:action/PutItem"
   credentials             = aws_iam_role.api_gw_to_ddb.arn
   type                    = "AWS"
 
   request_templates = {
-    "application/json" = <<-EOF
-    {
-      "TableName": "${aws_dynamodb_table.generic_data.name}",
-      "Item": {
-        "lon": {
-          "S": "$input.json('$.lon')"
-        },
+    "application/x-www-form-urlencoded" = <<-EOF
+{
+    "TableName": "${aws_dynamodb_table.generic_data.name}",
+    "Item": {
         "lat": {
-          "S": "$input.json('$.lat')"
+            "S": "$input.path('$.datastring')"
         },
         "timestamp": {
-          "S": "$input.json('$.timestamp')"
+            "S": "$input.path("TIMESTAMP HERE")"
         }
-      }
     }
-    EOF
+}
+EOF
 
-    "application/x-www-form-urlencoded" = <<-EOF
-#set($params = $input.path('$').split("&"))
-{
-  "TableName": "${aws_dynamodb_table.generic_data.name}",
-  "Item": {
-    "lon": {
-      "S": "$!params[0].split('=')[1]"
-    },
-    "lat": {
-      "S": "$!params[1].split('=')[1]"
-    },
-    "timestamp": {
-      "S": "$!params[2].split('=')[1]"
-    }
+    #     "application/json" = <<-EOF
+    # {
+    #     "TableName": "${aws_dynamodb_table.generic_data.name}",
+    #     "Item": {
+    #         "lon": {
+    #             "N": "$input.json('$.lon')"
+    #         },
+    #         "lat": {
+    #             "N": "$input.json('$.lat')"
+    #         },
+    #         "timestamp": {
+    #             "S": "$input.json('$.timestamp')"
+    #         }
+    #     }
+    # }
+    # EOF
   }
 }
 
-    EOF
-  }
-}
 
 resource "aws_api_gateway_method" "generic_post" {
   depends_on    = [aws_api_gateway_resource.generic_resource]
@@ -56,7 +52,7 @@ resource "aws_api_gateway_method" "generic_post" {
   http_method   = "POST"
   authorization = "NONE"
   request_parameters = {
-    "method.request.header.Content-Type" = true
+    "method.request.header.Content-Type" = false
   }
   request_models = {
     "application/x-www-form-urlencoded" = aws_api_gateway_model.location_data.name
