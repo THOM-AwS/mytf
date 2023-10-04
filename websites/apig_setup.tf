@@ -25,3 +25,10 @@ resource "aws_api_gateway_method_settings" "all" {
     data_trace_enabled = true
   }
 }
+
+resource "aws_api_gateway_request_validator" "validator" {
+  name                        = "validator_for_generic_api"
+  rest_api_id                 = aws_api_gateway_rest_api.generic_api.id
+  validate_request_body       = true
+  validate_request_parameters = true
+}

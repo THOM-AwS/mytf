@@ -3,7 +3,7 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   rest_api_id          = aws_api_gateway_rest_api.generic_api.id
   resource_id          = aws_api_gateway_resource.generic_resource.id
   http_method          = aws_api_gateway_method.generic_post.http_method
-  passthrough_behavior = "WHEN_NO_MATCH"
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
   # content_handling        = "CONVERT_TO_TEXT"
   integration_http_method = "POST"
   uri                     = "arn:aws:apigateway:${local.workspace.aws_region}:dynamodb:action/PutItem"
@@ -11,12 +11,14 @@ resource "aws_api_gateway_integration" "ddb_integration" {
   type                    = "AWS"
 
   request_templates = {
-    "application/json" = <<-EOF
+    "application/x-www-form-urlencoded" = <<-EOF
 #set($decoded = $util.urlDecode($input.body))
 #set($params = {})
 #foreach($param in $decoded.split("&"))
     #set($keyValue = $param.split("="))
-    #set($params[$keyValue[0]] = $keyValue[1])
+    #if($keyValue.size() > 1)
+        #set($params[$keyValue[0]] = $keyValue[1])
+    #end
 #end
 
 {
@@ -31,13 +33,35 @@ resource "aws_api_gateway_integration" "ddb_integration" {
         "timestamp": {
             "S": "$params.timestamp"
         }
-    }
-},
-  "debug": {
+    },
+    "debug": {
         "timestamp": "$params.timestamp",
         "decoded_lon": "$params.lon",
         "decoded_lat": "$params.lat",
-        "decoded_body": $util.escapeJavaScript($decoded),
+        "decoded_body": "$util.escapeJavaScript($decoded)",
+        "request": {
+            "parameters": "$util.escapeJavaScript($input.params())"
+        }
+    }
+}
+EOF
+    "application/json"                  = <<-EOF
+{
+    "TableName": "${aws_dynamodb_table.generic_data.name}",
+    "Item": {
+        "longitude": {
+            "N": "$input.json('$.lon')"
+        },
+        "latitude": {
+            "N": "$input.json('$.lat')"
+        },
+        "timestamp": {
+            "S": "$input.json('$.timestamp')"
+        }
+    },
+    "debug": {
+        "timestamp": "$input.json('$.timestamp')",
+        "decoded_body": "$input.json('$')",
         "request": {
             "parameters": "$util.escapeJavaScript($input.params())"
         }
@@ -55,10 +79,11 @@ resource "aws_api_gateway_method" "generic_post" {
   http_method   = "POST"
   authorization = "NONE"
   request_parameters = {
-    "method.request.header.Content-Type" = false
+    "method.request.header.Content-Type" = true
   }
   request_models = {
-    "application/x-www-form-urlencoded" = aws_api_gateway_model.location_data.name
+    "application/x-www-form-urlencoded" = aws_api_gateway_model.location_data.name,
+    "application/json"                  = aws_api_gateway_model.location_data.name
   }
 }
 
@@ -115,21 +140,27 @@ resource "aws_api_gateway_integration_response" "data_post_4XX_response" {
     "method.response.header.Content-Type" = "'application/json'"
   }
   response_templates = {
-    "application/json" = jsonencode({
-      "timestamp" : "$context.requestTime",
-      "request" : {
-        "body" : "$util.escapeJavaScript($input.json('$'))",
-        "parameters" : "$util.escapeJavaScript($input.params())",
-      },
-      "response" : {
-        "status" : "$context.status",
-        "error_message_input" : "$input.path('$.errorMessage')",
-        "status_code_input" : "$input.path('$.statusCode')",
-        "error_message_context" : "$context.error.message"
-      },
-      }
-    )
+    "application/json" = <<-EOF
+{
+  "timestamp": "$context.requestTime",
+  "request": {
+    "body": "$util.escapeJavaScript($input.json('$'))",
+    "parameters": "$util.escapeJavaScript($input.params())"
+  },
+  "response": {
+    "status": "$context.status",
+    #if($input.path('$.errorMessage'))
+    "error_message_input": "$input.path('$.errorMessage')",
+    #else
+    "error_message_input": "No error message provided",
+    #end
+    "status_code_input": "$input.path('$.statusCode')",
+    "error_message_context": "$context.error.message"
   }
+}
+EOF
+  }
+
 }
 resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
   depends_on        = [aws_api_gateway_integration.ddb_integration]
@@ -137,26 +168,32 @@ resource "aws_api_gateway_integration_response" "data_post_5XX_response" {
   resource_id       = aws_api_gateway_resource.generic_resource.id
   http_method       = aws_api_gateway_method.generic_post.http_method
   status_code       = "500"
-  selection_pattern = "5//d{2}"
+  selection_pattern = "5\\d{2}"
   response_parameters = {
     "method.response.header.Content-Type" = "'application/json'"
   }
   response_templates = {
-    "application/json" = jsonencode({
-      "timestamp" : "$context.requestTime",
-      "request" : {
-        "body" : "$util.escapeJavaScript($input.json('$'))",
-        "parameters" : "$util.escapeJavaScript($input.params())",
-      },
-      "response" : {
-        "status" : "$context.status",
-        "error_message_input" : "$input.path('$.errorMessage')",
-        "status_code_input" : "$input.path('$.statusCode')",
-        "error_message_context" : "$context.error.message"
-      },
-      }
-    )
+    "application/json" = <<-EOF
+{
+  "timestamp": "$context.requestTime",
+  "request": {
+    "body": "$util.escapeJavaScript($input.json('$'))",
+    "parameters": "$util.escapeJavaScript($input.params())"
+  },
+  "response": {
+    "status": "$context.status",
+    #if($input.path('$.errorMessage'))
+    "error_message_input": "$input.path('$.errorMessage')",
+    #else
+    "error_message_input": "No error message provided",
+    #end
+    "status_code_input": "$input.path('$.statusCode')",
+    "error_message_context": "$context.error.message"
   }
+}
+EOF
+  }
+
 }
 
 resource "aws_api_gateway_gateway_response" "default_4xx_response" {
@@ -164,42 +201,55 @@ resource "aws_api_gateway_gateway_response" "default_4xx_response" {
   status_code   = "400"
   response_type = "DEFAULT_4XX"
   response_templates = {
-    "application/json" = jsonencode({
-      "timestamp" : "$context.requestTime",
-      "request" : {
-        "body" : "$util.escapeJavaScript($input.json('$'))",
-        "parameters" : "$util.escapeJavaScript($input.params())",
-      },
-      "response" : {
-        "status" : "$context.status",
-        "error_message_input" : "$input.path('$.errorMessage')",
-        "status_code_input" : "$input.path('$.statusCode')",
-        "error_message_context" : "$context.error.message"
-      },
-      }
-    )
+    "application/json" = <<-EOF
+{
+  "timestamp": "$context.requestTime",
+  "request": {
+    "body": "$util.escapeJavaScript($input.json('$'))",
+    "parameters": "$util.escapeJavaScript($input.params())"
+  },
+  "response": {
+    "status": "$context.status",
+    #if($input.path('$.errorMessage'))
+    "error_message_input": "$input.path('$.errorMessage')",
+    #else
+    "error_message_input": "No error message provided",
+    #end
+    "status_code_input": "$input.path('$.statusCode')",
+    "error_message_context": "$context.error.message"
   }
 }
+EOF
+  }
+}
+
+
 resource "aws_api_gateway_gateway_response" "default_403_response" {
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
   status_code   = "403"
   response_type = "ACCESS_DENIED"
   response_templates = {
-    "application/json" = jsonencode({
-      "timestamp" : "$context.requestTime",
-      "request" : {
-        "body" : "$util.escapeJavaScript($input.json('$'))",
-        "parameters" : "$util.escapeJavaScript($input.params())",
-      },
-      "response" : {
-        "status" : "$context.status",
-        "error_message_input" : "$input.path('$.errorMessage')",
-        "status_code_input" : "$input.path('$.statusCode')",
-        "error_message_context" : "$context.error.message"
-      },
-      }
-    )
+    "application/json" = <<-EOF
+{
+  "timestamp": "$context.requestTime",
+  "request": {
+    "body": "$util.escapeJavaScript($input.json('$'))",
+    "parameters": "$util.escapeJavaScript($input.params())"
+  },
+  "response": {
+    "status": "$context.status",
+    #if($input.path('$.errorMessage'))
+    "error_message_input": "$input.path('$.errorMessage')",
+    #else
+    "error_message_input": "No error message provided",
+    #end
+    "status_code_input": "$input.path('$.statusCode')",
+    "error_message_context": "$context.error.message"
   }
+}
+EOF
+  }
+
 }
 resource "aws_api_gateway_gateway_response" "default_404_response" {
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
@@ -207,40 +257,52 @@ resource "aws_api_gateway_gateway_response" "default_404_response" {
   response_type = "RESOURCE_NOT_FOUND"
 
   response_templates = {
-    "application/json" = jsonencode({
-      "timestamp" : "$context.requestTime",
-      "request" : {
-        "body" : "$util.escapeJavaScript($input.json('$'))",
-        "parameters" : "$util.escapeJavaScript($input.params())",
-      },
-      "response" : {
-        "status" : "$context.status",
-        "error_message_input" : "$input.path('$.errorMessage')",
-        "status_code_input" : "$input.path('$.statusCode')",
-        "error_message_context" : "$context.error.message"
-      },
-      }
-    )
+    "application/json" = <<-EOF
+{
+  "timestamp": "$context.requestTime",
+  "request": {
+    "body": "$util.escapeJavaScript($input.json('$'))",
+    "parameters": "$util.escapeJavaScript($input.params())"
+  },
+  "response": {
+    "status": "$context.status",
+    #if($input.path('$.errorMessage'))
+    "error_message_input": "$input.path('$.errorMessage')",
+    #else
+    "error_message_input": "No error message provided",
+    #end
+    "status_code_input": "$input.path('$.statusCode')",
+    "error_message_context": "$context.error.message"
   }
+}
+EOF
+  }
+
 }
 resource "aws_api_gateway_gateway_response" "default_5xx_response" {
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
   status_code   = "500"
   response_type = "DEFAULT_5XX"
   response_templates = {
-    "application/json" = jsonencode({
-      "timestamp" : "$context.requestTime",
-      "request" : {
-        "body" : "$util.escapeJavaScript($input.json('$'))",
-        "parameters" : "$util.escapeJavaScript($input.params())",
-      },
-      "response" : {
-        "status" : "$context.status",
-        "error_message_input" : "$input.path('$.errorMessage')",
-        "status_code_input" : "$input.path('$.statusCode')",
-        "error_message_context" : "$context.error.message"
-      },
-      }
-    )
+    "application/json" = <<-EOF
+{
+  "timestamp": "$context.requestTime",
+  "request": {
+    "body": "$util.escapeJavaScript($input.json('$'))",
+    "parameters": "$util.escapeJavaScript($input.params())"
+  },
+  "response": {
+    "status": "$context.status",
+    #if($input.path('$.errorMessage'))
+    "error_message_input": "$input.path('$.errorMessage')",
+    #else
+    "error_message_input": "No error message provided",
+    #end
+    "status_code_input": "$input.path('$.statusCode')",
+    "error_message_context": "$context.error.message"
   }
+}
+EOF
+  }
+
 }
