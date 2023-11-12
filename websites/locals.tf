@@ -6,11 +6,6 @@ locals {
       aws_region  = "us-east-1"
       domain_name = "hamer.cloud"
     }
-    hamerdev = {
-      aws_profile = "hamer"
-      aws_region  = "us-east-1"
-      domain_name = "dev.hamer.cloud"
-    }
     wcplumbing = {
       aws_profile = "hamer"
       aws_region  = "us-east-1"

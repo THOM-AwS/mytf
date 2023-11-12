@@ -14,6 +14,11 @@ plan: .env init workspace
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform plan'
 .PHONY: plan
 
+validate: .env
+	docker-compose run --rm envvars ensure --tags terraform
+	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform validate'
+.PHONY: validate
+
 output: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform output user_secret_access_key'
@@ -50,3 +55,8 @@ workspace: .env
 	docker-compose run --rm envvars validate
 	docker-compose run --rm envvars envfile --overwrite
 .PHONY: .env
+
+recover_state:
+	docker-compose run --rm envvars ensure --tags terraform
+	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform state push errored.tfstate'
+.PHONY: recover_state
