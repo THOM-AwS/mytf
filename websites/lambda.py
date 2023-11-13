@@ -24,7 +24,7 @@ def handler(event, context):
         }
 
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('locations')
+    table = dynamodb.Table('genericDataTable')
 
     # Construct the item with the desired structure
     item = {
