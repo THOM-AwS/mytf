@@ -15,6 +15,30 @@ resource "aws_iam_role" "lambda_logging" {
   })
 }
 
+resource "aws_iam_policy" "lambda_dynamodb_access" {
+  name        = "LambdaDynamoDBAccess"
+  description = "IAM policy for Lambda function to access DynamoDB"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:PutItem"
+        ],
+        Resource = "arn:aws:dynamodb:us-east-1:490638925706:table/genericDataTable"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_dynamodb_attachment" {
+  role       = aws_iam_role.lambda_logging.name
+  policy_arn = aws_iam_policy.lambda_dynamodb_access.arn
+}
+
+
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_logging.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -49,15 +73,15 @@ resource "null_resource" "zip_lambda" {
   }
 }
 
-# resource "aws_lambda_permission" "apigw" {
-#   statement_id  = "AllowAPIGatewayInvoke"
-#   action        = "lambda:InvokeFunction"
-#   function_name = aws_lambda_function.log_payload.function_name
-#   principal     = "apigateway.amazonaws.com"
-#   # The /*/* in the source_arn is a wildcard that can be used to allow any method on any resource within the API Gateway.
-#   # Adjust the wildcard pattern as needed to be more specific if necessary.
-#   source_arn = "${aws_api_gateway_deployment.deploy_api.execution_arn}/*/*"
-# }
+resource "aws_lambda_permission" "apigw" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.log_payload.function_name
+  principal     = "apigateway.amazonaws.com"
+  # The /*/* in the source_arn is a wildcard that can be used to allow any method on any resource within the API Gateway.
+  # Adjust the wildcard pattern as needed to be more specific if necessary.
+  source_arn = "${aws_api_gateway_deployment.deploy_api.execution_arn}*/*/*"
+}
 
 
 
