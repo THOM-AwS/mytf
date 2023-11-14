@@ -8,5 +8,11 @@ resource "aws_dynamodb_table" "generic_data" {
     name = "timestamp"
     type = "S"
   }
+
   hash_key = "timestamp"
+
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
 }

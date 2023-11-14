@@ -1,7 +1,8 @@
 import boto3
 import json
 import logging
-import urllib.parse  # Import urllib.parse module
+import time
+import urllib.parse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -26,11 +27,15 @@ def handler(event, context):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('genericDataTable')
 
-    # Construct the item with the desired structure
+    # Calculate TTL (20 minutes from now)
+    ttl = int(time.time()) + 1200  # 1200 seconds = 20 minutes
+
+    # Construct the item with the desired structure and TTL
     item = {
-        'timestamp': timestamp,  # assuming 'timestamp' is your primary key
+        'timestamp': timestamp,
         'lat': lat,
-        'lon': lon
+        'lon': lon,
+        'ttl': ttl
     }
 
     table.put_item(Item=item)
