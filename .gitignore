@@ -33,5 +33,3 @@ override.tf.json
 *.idea
 
 .DS_Store
-**/lambda_package.zip
-**/lambda_package_get.zip
