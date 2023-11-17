@@ -16,6 +16,18 @@ def handler(event, context):
     lon = parsed_body.get('lon', [None])[0]
     timestamp = parsed_body.get('timestamp', [None])[0]
 
+    # Convert lat, lon, and timestamp to appropriate numeric types
+    try:
+        lat = float(lat) if lat is not None else None
+        lon = float(lon) if lon is not None else None
+        timestamp = int(timestamp) if timestamp is not None else None
+    except ValueError:
+        logger.error("Invalid data types for lat, lon, or timestamp")
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'message': 'Invalid data types for lat, lon, or timestamp'})
+        }
+
     # Check if lat, lon, and timestamp are present
     if lat is None or lon is None or timestamp is None:
         logger.error("Missing required fields in the event")
@@ -28,17 +40,18 @@ def handler(event, context):
     table = dynamodb.Table('genericDataTable')
 
     # Calculate TTL (20 minutes from now)
-    ttl = int(time.time()) + 1200  # 1200 seconds = 20 minutes
+    ttl = int(time.time()) + 10800  # three hours
 
     # Construct the item with the desired structure and TTL
     item = {
-        'timestamp': timestamp,
-        'lat': lat,
-        'lon': lon,
-        'ttl': ttl
+        'timestamp': {'N': str(timestamp)},
+        'lat': {'N': str(lat)},
+        'lon': {'N': str(lon)},
+        'ttl': {'N': str(ttl)}
     }
 
     table.put_item(Item=item)
+    logger.info("Logged payload: %s", json.dumps(item))
 
     return {
         'statusCode': 200,
