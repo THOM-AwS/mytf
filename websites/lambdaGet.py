@@ -4,7 +4,6 @@ import decimal
 import logging
 from json import JSONEncoder
 
-# Custom JSONEncoder that converts Decimals to floats
 class DecimalEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, decimal.Decimal):
@@ -20,16 +19,14 @@ def handler(event, context):
     try:
         response = table.scan()
         logger.info("message: %s", response)
+        print(response)
         items = response.get('Items', [])
-    
-        test_data = {'value': decimal.Decimal('10.5')}
-        print(json.dumps(test_data, cls=DecimalEncoder))
 
         return {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'  # Handle CORS
+                'Access-Control-Allow-Origin': '*'
             },
             'body': json.dumps(items, cls=DecimalEncoder)
         }
