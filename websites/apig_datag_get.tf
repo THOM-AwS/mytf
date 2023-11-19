@@ -40,6 +40,7 @@ resource "aws_lambda_function" "get" {
 }
 
 resource "null_resource" "zip_lambda_get" {
+  depends_on = [null_resource.zip_lambda]
   triggers = {
     lambda_hash = filemd5("lambdaGet.py")
   }

@@ -3,6 +3,14 @@ import json
 import logging
 import time
 import urllib.parse
+from decimal import Decimal
+from json import JSONEncoder
+
+class DecimalEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(DecimalEncoder, self).default(obj)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -16,42 +24,51 @@ def handler(event, context):
     lon = parsed_body.get('lon', [None])[0]
     timestamp = parsed_body.get('timestamp', [None])[0]
 
-    # Convert lat, lon, and timestamp to appropriate numeric types
+    # Convert lat and lon to Decimal, and ensure timestamp is a string
     try:
-        lat = float(lat) if lat is not None else None
-        lon = float(lon) if lon is not None else None
-        timestamp = int(timestamp) if timestamp is not None else None
-    except ValueError:
-        logger.error("Invalid data types for lat, lon, or timestamp")
+        lat = Decimal(lat) if lat is not None else None
+        lon = Decimal(lon) if lon is not None else None
+    except (ValueError, TypeError):
+        logger.error("Invalid data types for lat or lon")
         return {
             'statusCode': 400,
-            'body': json.dumps({'message': 'Invalid data types for lat, lon, or timestamp'})
+            'body': json.dumps({'message': 'Invalid data types for lat or lon'})
         }
 
-    # Check if lat, lon, and timestamp are present
-    if lat is None or lon is None or timestamp is None:
-        logger.error("Missing required fields in the event")
+    if timestamp is None:
+        logger.error("Missing timestamp in the event")
         return {
             'statusCode': 400,
-            'body': json.dumps({'message': 'Missing required fields'})
+            'body': json.dumps({'message': 'Missing timestamp'})
         }
+
+    # Ensure timestamp is a string
+    timestamp = str(timestamp)
 
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('genericDataTable')
 
-    # Calculate TTL (20 minutes from now)
+    # Calculate TTL (3 hours from now)
     ttl = int(time.time()) + 10800  # three hours
 
-    # Construct the item with the desired structure and TTL
     item = {
-        'timestamp': {'N': str(timestamp)},
-        'lat': {'N': str(lat)},
-        'lon': {'N': str(lon)},
-        'ttl': {'N': str(ttl)}
+        'timestamp': timestamp,
+        'lat': lat,
+        'lon': lon,
+        'ttl': ttl
     }
 
-    table.put_item(Item=item)
-    logger.info("Logged payload: %s", json.dumps(item))
+    try:
+        table.put_item(Item=item)
+        logger.info("Logged payload: %s", json.dumps(item, cls=DecimalEncoder))
+    
+    except Exception as e:
+        logger.error("Error putting item in DynamoDB: %s", e)
+        print(json.dumps({'message': 'Error putting item in DynamoDB', 'error': str(e)}))
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Error putting item in DynamoDB'})
+        }
 
     return {
         'statusCode': 200,
