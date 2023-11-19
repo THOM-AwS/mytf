@@ -21,7 +21,7 @@ resource "aws_api_gateway_method" "generic_get" {
 }
 
 resource "aws_lambda_function" "get" {
-  depends_on       = [null_resource.zip_lambda_get, time_sleep.wait_10_seconds]
+  depends_on       = [null_resource.zip_lambda_get]
   function_name    = "get_loc_Lambda"
   filename         = "lambda_package_get.zip"
   source_code_hash = filebase64sha256("lambda_package_get.zip")
@@ -42,6 +42,9 @@ resource "null_resource" "zip_lambda_get" {
   }
   provisioner "local-exec" {
     command = "apk add --no-cache zip && zip -r lambda_package_get.zip lambdaGet.py"
+  }
+  provisioner "local-exec" {
+    command = "sleep 10"
   }
 }
 

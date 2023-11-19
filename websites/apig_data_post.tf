@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_lambda_function" "log_payload" {
-  depends_on       = [null_resource.zip_lambda, time_sleep.wait_10_seconds]
+  depends_on       = [null_resource.zip_lambda]
   function_name    = "LogPayloadLambda"
   filename         = "lambda_package.zip"
   source_code_hash = filebase64sha256("lambda_package.zip")
@@ -89,10 +89,9 @@ resource "null_resource" "zip_lambda" {
   provisioner "local-exec" {
     command = "apk add --no-cache zip && zip -r lambda_package.zip lambda.py"
   }
-}
-
-resource "time_sleep" "wait_10_seconds" {
-  create_duration = "10s"
+  provisioner "local-exec" {
+    command = "sleep 10"
+  }
 }
 
 resource "aws_lambda_permission" "apigw" {
