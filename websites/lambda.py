@@ -20,30 +20,32 @@ def handler(event, context):
 
     # Parse the URL-encoded body
     parsed_body = urllib.parse.parse_qs(event['body'])
-    lat = parsed_body.get('lat', [None])[0]
-    lon = parsed_body.get('lon', [None])[0]
-    timestamp = parsed_body.get('timestamp', [None])[0]
 
-    # Convert lat and lon to Decimal, and ensure timestamp is a string
+    # Extract and convert all fields
     try:
-        lat = Decimal(lat) if lat is not None else None
-        lon = Decimal(lon) if lon is not None else None
-    except (ValueError, TypeError):
-        logger.error("Invalid data types for lat or lon")
+        lat = Decimal(parsed_body.get('lat', [None])[0]) if parsed_body.get('lat') else None
+        lon = Decimal(parsed_body.get('lon', [None])[0]) if parsed_body.get('lon') else None
+        alt = Decimal(parsed_body.get('alt', [None])[0]) if parsed_body.get('alt') else None
+        acc = Decimal(parsed_body.get('acc', [None])[0]) if parsed_body.get('acc') else None
+        bat = Decimal(parsed_body.get('bat', [None])[0]) if parsed_body.get('bat') else None
+        sat = int(parsed_body.get('sat', [None])[0]) if parsed_body.get('sat') else None
+        speed = Decimal(parsed_body.get('speed', [None])[0]) if parsed_body.get('speed') else None
+        bearing = Decimal(parsed_body.get('bearing', [None])[0]) if parsed_body.get('bearing') else None
+        useragent = parsed_body.get('useragent', [None])[0]
+        timestamp = str(parsed_body.get('timestamp', [None])[0])
+    except (ValueError, TypeError) as e:
+        logger.error("Invalid data types in payload: %s", e)
         return {
             'statusCode': 400,
-            'body': json.dumps({'message': 'Invalid data types for lat or lon'})
+            'body': json.dumps({'message': 'Invalid data types in payload'})
         }
 
-    if timestamp is None:
-        logger.error("Missing timestamp in the event")
+    if not all([lat, lon, timestamp]):
+        logger.error("Missing required fields (lat, lon, timestamp) in the event")
         return {
             'statusCode': 400,
-            'body': json.dumps({'message': 'Missing timestamp'})
+            'body': json.dumps({'message': 'Missing required fields'})
         }
-
-    # Ensure timestamp is a string
-    timestamp = str(timestamp)
 
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('genericDataTable')
@@ -51,20 +53,29 @@ def handler(event, context):
     # Calculate TTL (3 hours from now)
     ttl = int(time.time()) + 10800  # three hours
 
+    # Construct the item with all fields
     item = {
         'timestamp': timestamp,
         'lat': lat,
         'lon': lon,
+        'alt': alt,
+        'acc': acc,
+        'bat': bat,
+        'sat': sat,
+        'speed': speed,
+        'bearing': bearing,
+        'useragent': useragent,
         'ttl': ttl
     }
+
+    # Remove any None values from the item
+    item = {k: v for k, v in item.items() if v is not None}
 
     try:
         table.put_item(Item=item)
         logger.info("Logged payload: %s", json.dumps(item, cls=DecimalEncoder))
-    
     except Exception as e:
         logger.error("Error putting item in DynamoDB: %s", e)
-        print(json.dumps({'message': 'Error putting item in DynamoDB', 'error': str(e)}))
         return {
             'statusCode': 500,
             'body': json.dumps({'message': 'Error putting item in DynamoDB'})
@@ -72,8 +83,6 @@ def handler(event, context):
 
     return {
         'statusCode': 200,
-        'headers': {
-            'Access-Control-Allow-Origin': '*',
-        },
+        'headers': {'Access-Control-Allow-Origin': '*'},
         'body': json.dumps({'message': 'Payload logged successfully!'})
     }
