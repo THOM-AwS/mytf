@@ -21,17 +21,13 @@ resource "aws_api_gateway_method" "generic_get" {
 }
 
 resource "aws_lambda_function" "get" {
-  depends_on    = [null_resource.zip_lambda]
-  function_name = "get_loc_Lambda"
-
-  filename = "lambda_package_get.zip"
-
+  depends_on       = [null_resource.zip_lambda_get, time_sleep.wait_10_seconds]
+  function_name    = "get_loc_Lambda"
+  filename         = "lambda_package_get.zip"
   source_code_hash = filebase64sha256("lambda_package_get.zip")
-
-  role    = aws_iam_role.lambda_logging.arn
-  handler = "lambdaGet.handler"
-  runtime = "python3.7"
-
+  role             = aws_iam_role.lambda_logging.arn
+  handler          = "lambdaGet.handler"
+  runtime          = "python3.7"
   environment {
     variables = {
       LOG_LEVEL = "INFO"

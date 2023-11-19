@@ -68,18 +68,13 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_lambda_function" "log_payload" {
-  depends_on    = [null_resource.zip_lambda]
-  function_name = "LogPayloadLambda"
-
-  # Assuming you have a deployment package named "lambda_package.zip" in the current directory.
-  filename = "lambda_package.zip"
-
+  depends_on       = [null_resource.zip_lambda, time_sleep.wait_10_seconds]
+  function_name    = "LogPayloadLambda"
+  filename         = "lambda_package.zip"
   source_code_hash = filebase64sha256("lambda_package.zip")
-
-  role    = aws_iam_role.lambda_logging.arn
-  handler = "lambda.handler"
-  runtime = "python3.7"
-
+  role             = aws_iam_role.lambda_logging.arn
+  handler          = "lambda.handler"
+  runtime          = "python3.7"
   environment {
     variables = {
       LOG_LEVEL = "INFO"
@@ -94,6 +89,10 @@ resource "null_resource" "zip_lambda" {
   provisioner "local-exec" {
     command = "apk add --no-cache zip && zip -r lambda_package.zip lambda.py"
   }
+}
+
+resource "time_sleep" "wait_10_seconds" {
+  create_duration = "10s"
 }
 
 resource "aws_lambda_permission" "apigw" {
