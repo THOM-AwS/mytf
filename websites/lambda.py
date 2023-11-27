@@ -23,14 +23,14 @@ def handler(event, context):
 
     # Extract and convert all fields
     try:
-        lat = Decimal(parsed_body.get('lat', [None])[0]) if parsed_body.get('lat') else None
-        lon = Decimal(parsed_body.get('lon', [None])[0]) if parsed_body.get('lon') else None
-        alt = Decimal(parsed_body.get('alt', [None])[0]) if parsed_body.get('alt') else None
-        acc = Decimal(parsed_body.get('acc', [None])[0]) if parsed_body.get('acc') else None
-        bat = Decimal(parsed_body.get('bat', [None])[0]) if parsed_body.get('bat') else None
+        lat = Decimal(parsed_body.get('lat', [None])[0]).quantize(Decimal('0.00001')) if parsed_body.get('lat') else None
+        lon = Decimal(parsed_body.get('lon', [None])[0]).quantize(Decimal('0.00001')) if parsed_body.get('lon') else None
+        alt = Decimal(parsed_body.get('alt', [None])[0]).quantize(Decimal('0.01')) if parsed_body.get('alt') else None
+        acc = Decimal(parsed_body.get('acc', [None])[0]).to_integral_value() if parsed_body.get('acc') else None
+        bat = Decimal(parsed_body.get('bat', [None])[0]).to_integral_value() if parsed_body.get('bat') else None
         sat = int(parsed_body.get('sat', [None])[0]) if parsed_body.get('sat') else None
-        speed = Decimal(parsed_body.get('speed', [None])[0]) if parsed_body.get('speed') else None
-        bearing = Decimal(parsed_body.get('bearing', [None])[0]) if parsed_body.get('bearing') else None
+        speed = Decimal(parsed_body.get('speed', [None])[0]).quantize(Decimal('0.1')) if parsed_body.get('speed') else None
+        bearing = Decimal(parsed_body.get('bearing', [None])[0]).quantize(Decimal('0.01')) if parsed_body.get('bearing') else None
         useragent = parsed_body.get('useragent', [None])[0]
         timestamp = str(parsed_body.get('timestamp', [None])[0])
     except (ValueError, TypeError) as e:
@@ -81,8 +81,13 @@ def handler(event, context):
             'body': json.dumps({'message': 'Error putting item in DynamoDB'})
         }
 
+    # Include the formatted output in the response
     return {
         'statusCode': 200,
         'headers': {'Access-Control-Allow-Origin': '*'},
-        'body': json.dumps({'message': 'Payload logged successfully!'})
+        'body': json.dumps({
+            'message': 'Payload logged successfully!',
+            'formattedOutput': item  # Including the formatted output string
+        })
     }
+
