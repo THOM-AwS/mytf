@@ -20,10 +20,10 @@ STATIC_HEADERS_TO_ADD = {
     }],
     'content-security-policy': [{
         'key': 'Content-Security-Policy',
-        'value': ("default-src 'self' data: *.googleapis.com https://www.google-analytics.com https://analytics.google.com https://api.hamer.cloud https://*.datahub.io; "
+        'value': ("default-src 'self' data: *.googleapis.com https://www.google-analytics.com https://analytics.google.com https://api.hamer.cloud https://*.datahub.io https://api.github.com; "
                   "base-uri 'self'; "
                   "img-src * 'self' data: https: 'unsafe-inline'; "
-                  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com https://maps.gstatic.com https://www.youtube.com *.google.com https://*.gstatic.com https://www.googletagmanager.com https://cdn.jsdelivr.net https://github.com data: https://www.google-analytics.com; "
+                  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com https://maps.gstatic.com https://www.youtube.com *.google.com https://*.gstatic.com https://www.googletagmanager.com https://cdn.jsdelivr.net https://github.com data: https://www.google-analytics.com https://api.github.com; "
                   "style-src 'self' 'unsafe-inline' *.googleapis.com https://fonts.googleapis.com data:; "
                   "font-src 'self' 'unsafe-inline' *.gstatic.com *.googleapis.com; "
                   "frame-src https://youtube.com https://www.youtube.com *.google.com https://cdn.jsdelivr.net; "
