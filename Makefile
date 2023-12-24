@@ -12,6 +12,7 @@ init: .env
 plan: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform plan'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf .terraform/modules/'
 .PHONY: plan
 
 validate: .env
@@ -27,11 +28,15 @@ output: .env init workspace
 apply: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform apply'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf websites/.terraform/modules/'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf websites/secheader.py.zip'
 .PHONY: apply
 
 applyAuto: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform apply -auto-approve'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf websites/.terraform/modules/'
+	docker-compose run --rm terraform-utils sh -c 'rm -rf websites/secheader.py.zip'
 .PHONY: applyAuto
 
 destroy: .env init workspace
