@@ -2,6 +2,7 @@ import json
 import boto3
 import decimal
 import logging
+import time
 from json import JSONEncoder
 
 class DecimalEncoder(JSONEncoder):
@@ -32,6 +33,10 @@ def handler(event, context):
             'body': json.dumps({'message': 'Internal Server Error'})
         }
 
+    current_timestamp = int(time.time())
+    for i, item in enumerate(items):
+        item['timestamp'] = (current_timestamp - 15) + i
+
     # Fallback item if no items are found
     if len(items) < 1:
         items = [
@@ -39,185 +44,183 @@ def handler(event, context):
                 "lat": -33.87076,
                 "lon": 151.20219,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
+                "speed": 1,
                 "bearing": 270,
-                "timestamp": 1700000000
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87070,
                 "lon": 151.20140,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
+                "speed": 1,
                 "bearing": 270,
-                "timestamp": 1700000001
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87045,
                 "lon": 151.19999,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 0,
-                "timestamp": 1700000002
+                "speed": 1,
+                "bearing": 270,
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87022,
                 "lon": 151.19917,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 270,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 0,
-                "timestamp": 1700000003
+                "speed": 1,
+                "bearing": 180,
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87105,
                 "lon": 151.19921,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 180,
-                "timestamp": 1700000004
+                "speed": 1,
+                "bearing": 120,
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.871271,
                 "lon": 151.199504,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
+                "speed": 1,
                 "bearing": 180,
-                "timestamp": 1700000005
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87220,
                 "lon": 151.19944,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
+                "speed": 1,
                 "bearing": 180,
-                "timestamp": 1700000006
+                "timestamp": current_timestamp
             },
             
             {
                 "lat": -33.87310,
                 "lon": 151.20000,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 120,
-                "timestamp": 1700000006
+                "speed": 1,
+                "bearing": 180,
+                "timestamp": current_timestamp
             },
             
             {
                 "lat": -33.87350,
                 "lon": 151.20000,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 120,
                 "useragent": "Bot",
-                "speed": 2,
+                "speed": 1,
                 "bearing": 120,
-                "timestamp": 1700000007
+                "timestamp": current_timestamp
             },
             
             {
                 "lat": -33.87349,
                 "lon": 151.20050,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
+                "speed": 1,
                 "bearing": 90,
-                "timestamp": 1700000008
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.873310,
                 "lon": 151.2012261,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 90,
-                "timestamp": 1700000008
+                "speed": 1,
+                "bearing": 70,
+                "timestamp": current_timestamp
             },
             
             {
                 "lat": -33.87317,
                 "lon": 151.20187,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 0,
-                "timestamp": 1700000008
+                "speed": 1,
+                "bearing": 1,
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87215,
                 "lon": 151.20190,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 0,
-                "timestamp": 1700000009
+                "speed": 1,
+                "bearing": 1,
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.8713138,
                 "lon": 151.2020507,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 0,
-                "timestamp": 1700000010
+                "speed": 1,
+                "bearing": 1,
+                "timestamp": current_timestamp
             },
             {
                 "lat": -33.87076,
                 "lon": 151.20219,
                 "alt": 20,
-                "acc": 10,
+                "acc": 30,
                 "bat": 100,
                 "sat": 0,
                 "useragent": "Bot",
-                "speed": 2,
-                "bearing": 0,
-                "timestamp": 1700000011
+                "timestamp": current_timestamp
             },
         ]
 
