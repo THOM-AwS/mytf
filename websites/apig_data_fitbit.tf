@@ -79,9 +79,17 @@ resource "null_resource" "create_zip" {
 
 
 # apig part
+
+resource "aws_api_gateway_resource" "fitbit_resource" {
+  depends_on  = [aws_api_gateway_rest_api.generic_api]
+  rest_api_id = aws_api_gateway_rest_api.generic_api.id
+  parent_id   = aws_api_gateway_rest_api.generic_api.root_resource_id
+  path_part   = "fitbit"
+}
+
 resource "aws_api_gateway_integration" "fitbit_lambda_integration" {
   rest_api_id             = aws_api_gateway_rest_api.generic_api.id
-  resource_id             = aws_api_gateway_resource.generic_resource.id
+  resource_id             = aws_api_gateway_resource.fitbit_resource.id
   http_method             = aws_api_gateway_method.fitbit_get.http_method
   passthrough_behavior    = "NEVER"
   integration_http_method = "GET"
@@ -92,21 +100,21 @@ resource "aws_api_gateway_integration" "fitbit_lambda_integration" {
 
 resource "aws_api_gateway_method" "fitbit_get" {
   rest_api_id   = aws_api_gateway_rest_api.generic_api.id
-  resource_id   = aws_api_gateway_resource.generic_resource.id
+  resource_id   = aws_api_gateway_resource.fitbit_resource.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_method_response" "fitbit_method_response" {
   rest_api_id = aws_api_gateway_rest_api.generic_api.id
-  resource_id = aws_api_gateway_resource.generic_resource.id
+  resource_id = aws_api_gateway_resource.fitbit_resource.id
   http_method = aws_api_gateway_method.fitbit_get.http_method
   status_code = "200"
 }
 
 # resource "aws_api_gateway_integration_response" "fitbit_integration_response" {
 #   rest_api_id = aws_api_gateway_rest_api.generic_api.id
-#   resource_id = aws_api_gateway_resource.generic_resource.id
+#   resource_id = aws_api_gateway_resource.fitbit_resource.id
 #   http_method = aws_api_gateway_method.fitbit_get.http_method
 #   status_code = aws_api_gateway_method_response.method_response.status_code
 
