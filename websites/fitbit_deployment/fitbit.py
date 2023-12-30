@@ -12,113 +12,59 @@ FITBIT_CLIENT_SECRET = os.environ.get("FITBIT_CLIENT_SECRET")
 ssm_client = boto3.client("ssm", region_name="us-east-1")
 
 
-def lambda_handler(event, context):
-    payload_response = []
+def lambda_handler():
     print("running...")
-    current_access_token = get_latest_access_token(
-        ssm_client
-    )
-    # electrocardiogram social activity weight temperature sleep settings cardio_fitness respiratory_rate location profile oxygen_saturation heartrate
-    electrocardiogram = auth(current_access_token, "activities/heart/date/today/1d.json")
-    payload_response.append(electrocardiogram)
-    activity = auth(current_access_token, "activities/activityCalories/date/today/1d.json")
-    payload_response.append(activity)
-    weight = auth(current_access_token, "body/log/weight/date/today/1d.json")
-    payload_response.append(weight)
-    temperature = auth(current_access_token, "body/temperature/date/today/1d.json")
-    payload_response.append(temperature)
-    sleep = auth(current_access_token, "sleep/date/today.json")
-    payload_response.append(sleep)
-    cardio_fitness = auth(current_access_token, "activities/heart/date/today/1d.json")
-    payload_response.append(cardio_fitness)
-    respiratory_rate = auth(current_access_token, "activities/heart/date/today/1d.json")
-    payload_response.append(respiratory_rate)
-    location = auth(current_access_token, "activities/heart/date/today/1d.json")
-    payload_response.append(location)
-    steps = auth(current_access_token, "activities/steps/date/today/1d.json")
-    payload_response.append(steps)
-    calories = auth(current_access_token, "activities/calories/date/today/1d.json")
-    payload_response.append(calories)
-    distance = auth(current_access_token, "activities/distance/date/today/1d.json")
-    payload_response.append(distance)
-    floors = auth(current_access_token, "activities/floors/date/today/1d.json")
-    payload_response.append(floors)
-    elevation = auth(current_access_token, "activities/elevation/date/today/1d.json")
-    payload_response.append(elevation)
-    heart_rate = auth(current_access_token, "activities/heart/date/today/1d.json")
-    payload_response.append(heart_rate)
-
+    payload_response = []
+    current_access_token = get_latest_access_token(ssm_client)
+    endpoints = [
+        "activities/heart/date/today/1d.json",
+        "activities/activityCalories/date/today/1d.json",
+        "activities/steps/date/today/1d.json",
+        "activities/calories/date/today/1d.json",
+        "activities/distance/date/today/1d.json",
+        "activities/floors/date/today/1d.json",
+        "activities/elevation/date/today/1d.json",
+        "body/log/weight/date/today/1d.json",
+        "body/temperature/date/today/1d.json",
+        "sleep/date/today.json",
+        "cardio_fitness/date/today/1d.json",
+        "respiratory_rate/date/today/1d.json",
+        "location/date/today/1d.json",
+        "profile.json",
+        "oxygen_saturation/date/today/1d.json",
+        "heartrate/date/today/1d.json",
+        "social/date/today/1d.json",
+        "weight/date/today/1d.json",
+    ]
+    
+    for endpoint in endpoints:
+        print("endpoint: ", endpoint)
+        data = auth(current_access_token, endpoint)
+        payload_response.append(data)
+    
+    print(payload_response)
     return payload_response
 
-
-# function to retreive the data from the fitbit api
 def get_data(current_access_token, endpoint):
-    print("get_data")
-    # make a request to the Fitbit API to get the user's data
     headers = {"Authorization": f"Bearer {current_access_token}"}
-    response = requests.get(
-        f"https://api.fitbit.com/1/user/-/{endpoint}", headers=headers
-    )
-    if response.status_code == 200:
-        print("User data:", response.json())
-        return {"statusCode": 200, "body": response.json()}
-    else:
-        print("Error while requesting user data:", response.text,response.status_code, response.raw)
-        raise Exception("Error while requesting user data:", response.text, response.status_code, response.raw)
+    response = requests.get(f"https://api.fitbit.com/1/user/-/{endpoint}", headers=headers)
+    return response
 
-
-# make a request for data using the access token
 def auth(current_access_token, endpoint):
-    print("auth")
-    try:
-        print("trying access token")
-        response = get_data(current_access_token, endpoint)
-        return response  # return the response from the get_data function if the current access token is valid
-    except:
-        print("access token not valid")
-        # if the current acccess code is not valid, get a new one with the refresh token
-        current_refresh_token = get_latest_refresh_token(ssm_client)
-        if current_refresh_token != None:
-            # Make a POST request to the Fitbit API to exchange the refresh token for an access token
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Authorization": f"Basic {base64.b64encode(f'{FITBIT_CLIENT_ID}:{FITBIT_CLIENT_SECRET}'.encode('utf-8'))}",
-            }
-            data = {
-                "grant_type": "refresh_token",
-                "refresh_token": current_refresh_token,
-            }
-            response = requests.post(
-                "https://api.fitbit.com/oauth2/token", headers=headers, data=data
-            )
-
-            # Check if the request was successful
-            if response.status_code != 200:
-                print("Error while requesting access token:", response.text)
-                return {
-                    "statusCode": 500,
-                    "body": "Error while requesting access token",
-                }
-
-            # Extract the access token from the response
-            access_token = response.json()["access_token"]
-            print("Access token:", access_token)
-
-            # Store the access token in parameter store
-            store_access_token(ssm_client, access_token)
-
-            # Store the refresh token in parameter store
-            store_refresh_token(ssm_client, response.json()["refresh_token"])
-
-            data = get_data(current_access_token, endpoint)
-            return data  # return the response from the get_data function if the current access token is valid
-        else:
-            print("Refresh token not found in SSM Parameter Store")
-            return {
-                "statusCode": 500,
-                "body": "Refresh token not found in SSM Parameter Store",
-            }
-
+    response = get_data(current_access_token, endpoint)
+    
+    if response.status_code == 200:
+        return {"statusCode": 200, "body": response.json()}
+    elif response.status_code == 401:  # Token expired
+        new_access_token = refresh_access_token(ssm_client)
+        
+        if new_access_token:
+            response = get_data(new_access_token, endpoint)
+            
+            if response.status_code == 200:
+                return {"statusCode": 200, "body": response.json()}
+    
+    return {"statusCode": response.status_code, "body": response.text}
 
 # Store the access token in parameter store using a function
 def store_access_token(ssm_client, access_token):
@@ -178,6 +124,35 @@ def get_latest_access_token(ssm_client):
     except ssm_client.exceptions.ParameterNotFound:
         return None  # Parameter not found
 
+def refresh_access_token(ssm_client):
+    print("refresh_access_token")
+    current_refresh_token = get_latest_refresh_token(ssm_client)
+
+    if current_refresh_token:
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        data = {
+            "grant_type": "refresh_token",
+            "client_id": FITBIT_CLIENT_ID,
+            "refresh_token": current_refresh_token,
+        }
+        response = requests.post("https://api.fitbit.com/oauth2/token", headers=headers, data=data)
+        
+        if response.status_code == 200:
+            new_access_token = response.json()["access_token"]
+            store_access_token(ssm_client, new_access_token)
+            store_refresh_token(ssm_client, response.json()["refresh_token"])
+            return new_access_token
+    
+    return None
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
-    lambda_handler(None, None)
+    lambda_handler()
