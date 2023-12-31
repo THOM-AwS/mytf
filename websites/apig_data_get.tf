@@ -64,7 +64,3 @@ resource "aws_lambda_permission" "apigw_get" {
   # Adjust the wildcard pattern as needed to be more specific if necessary.
   source_arn = "${aws_api_gateway_deployment.deploy_api.execution_arn}*/*/*"
 }
-
-
-
-

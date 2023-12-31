@@ -3,8 +3,10 @@ resource "aws_api_gateway_deployment" "deploy_api" {
     aws_api_gateway_rest_api.generic_api,
     aws_api_gateway_integration.ddb_integration,
     aws_api_gateway_integration.ddb_get,
+    aws_api_gateway_integration.fitbit_lambda_integration
   ]
   rest_api_id = aws_api_gateway_rest_api.generic_api.id
+  stage_name  = "prod"
 }
 
 resource "aws_api_gateway_domain_name" "api_custom_domain" {
