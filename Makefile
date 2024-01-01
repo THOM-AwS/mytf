@@ -9,6 +9,10 @@ init: .env
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform init'
 .PHONY: init
 
+refresh: .env init
+	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform refresh'
+.PHONY: refresh
+
 plan: .env init workspace
 	docker-compose run --rm envvars ensure --tags terraform
 	docker-compose run --rm terraform-utils sh -c 'cd $${SUBFOLDER}; terraform plan'

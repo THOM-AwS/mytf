@@ -119,8 +119,8 @@ def handler(event, context):
         "body": json.dumps(
             {
                 "message": "Payload logged successfully!",
-                "formattedOutput": item,  # The item contains Decimal objects
+                "formattedOutput": item,
             },
             cls=DecimalEncoder,
-        ),  # Using DecimalEncoder here
+        ),
     }
