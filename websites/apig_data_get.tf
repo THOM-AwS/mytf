@@ -62,5 +62,5 @@ resource "aws_lambda_permission" "apigw_get" {
   principal     = "apigateway.amazonaws.com"
   # The /*/* in the source_arn is a wildcard that can be used to allow any method on any resource within the API Gateway.
   # Adjust the wildcard pattern as needed to be more specific if necessary.
-  source_arn = "${aws_api_gateway_deployment.deploy_api.execution_arn}*/*/*"
+  source_arn = "${aws_api_gateway_rest_api.generic_api.execution_arn}/*/*/*"
 }

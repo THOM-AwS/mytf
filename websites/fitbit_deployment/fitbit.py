@@ -45,12 +45,15 @@ def lambda_handler(event, context):
     
     
     api_gateway_response = {
-        "statusCode": 200,
-        "headers": {
-            "Content-Type": "application/json"
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
         },
-        "body": json.dumps(payload_response)
+        'body': json.dumps(payload_response)
     }
+    
+    print(api_gateway_response)
     return api_gateway_response
 
 def get_data(current_access_token, endpoint):
