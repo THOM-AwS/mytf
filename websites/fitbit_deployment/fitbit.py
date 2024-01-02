@@ -74,11 +74,8 @@ def generate_endpoints():
     today = datetime.now()
 
     for i in range(30):
-        # Calculate the date for each day
         date = today - timedelta(days=i)
-        formatted_date = date.strftime("%Y-%m-%d")  # Format the date as 'yyyy-mm-dd'
-        
-        # Create the endpoint and add it to the list
+        formatted_date = date.strftime("%Y-%m-%d")
         endpoint = f"{base_url}{formatted_date}{detail_level}"
         endpoints.append(endpoint)
 
@@ -87,12 +84,11 @@ def generate_endpoints():
 # Store the access token in parameter store using a function
 def store_access_token(ssm_client, access_token):
     print("store_access_token")
-    # Store the access token in SSM Parameter Store
     ssm_client.put_parameter(
-        Name="access_token",  # Replace with your parameter name
-        Value=access_token,  # Replace with your access token value
-        Type="String",  # Set the parameter type to SecureString
-        Overwrite=True,  # Overwrite the existing parameter if it exists
+        Name="access_token", 
+        Value=access_token,
+        Type="String",
+        Overwrite=True,
     )
     print("Access token stored in SSM Parameter Store")
     print(access_token)
@@ -103,44 +99,40 @@ def store_access_token(ssm_client, access_token):
 # Store the access token in parameter store using a function
 def store_refresh_token(ssm_client, refresh_token):
     print("store_refresh_token")
-    # Store the access token in SSM Parameter Store
     ssm_client.put_parameter(
-        Name="refresh_token",  # Replace with your parameter name
-        Value=refresh_token,  # Replace with your access token value
-        Type="String",  # Set the parameter type to SecureString
-        Overwrite=True,  # Overwrite the existing parameter if it exists
+        Name="refresh_token",
+        Value=refresh_token,
+        Type="String",
+        Overwrite=True,
     )
     print("Refresh token stored in SSM Parameter Store")
     print(refresh_token)
-    # Return a success message to the caller
     return {"statusCode": 200, "body": "Refresh token stored in SSM Parameter Store"}
 
 
 # Get the latest refresh token from parameter store using a function
 def get_latest_refresh_token(ssm_client):
     print("get_latest_refresh_token")
-    # Retrieve the refresh token from SSM Parameter Store
     try:
         response = ssm_client.get_parameter(
-            Name="refresh_token",  # Replace with your parameter name
+            Name="refresh_token",
         )
         return response["Parameter"]["Value"]
     except ssm_client.exceptions.ParameterNotFound:
-        return None  # Parameter not found
+        return None 
 
 
 # Get the latest access token from parameter store using a function
 def get_latest_access_token(ssm_client):
     print("get_latest_access_token")
-    # Retrieve the refresh token from SSM Parameter Store
     try:
         response = ssm_client.get_parameter(
-            Name="access_token",  # Replace with your parameter name
+            Name="access_token",
             # WithDecryption=True  # Decrypt SecureString parameter
         )
         return response["Parameter"]["Value"]
     except ssm_client.exceptions.ParameterNotFound:
-        return None  # Parameter not found
+        return None
 
 
 def refresh_access_token(ssm_client):
