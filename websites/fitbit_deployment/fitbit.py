@@ -1,22 +1,18 @@
-from calendar import c
 import os
-from weakref import ref
 import boto3
 import requests
 import json
-import base64
+from datetime import datetime, timedelta
 
 FITBIT_CLIENT_ID = os.environ.get("FITBIT_CLIENT_ID")
-
 ssm_client = boto3.client("ssm", region_name="us-east-1")
 
-
 def lambda_handler(event, context):
-    print("running...")
     payload_response = []
     current_access_token = get_latest_access_token(ssm_client)
     endpoints = [
         "activities/heart/date/today/30d.json",
+        "activities/heart/date/today/30d/15min.json"
         # "activities/activityCalories/date/today/7d.json",
         "activities/steps/date/today/30d.json",
         # "activities/calories/date/today/7d.json",
@@ -26,12 +22,8 @@ def lambda_handler(event, context):
     ]
 
     for endpoint in endpoints:
-        print("endpoint: ", endpoint)
         data = auth(current_access_token, endpoint)
         payload_response.append(data)
-
-    print(payload_response)
-    
     
     api_gateway_response = {
         'statusCode': 200,
@@ -68,7 +60,6 @@ def auth(current_access_token, endpoint):
                 return {"statusCode": 200, "body": response.json()}
 
     return {"statusCode": response.status_code, "body": response.text}
-
 
 # Store the access token in parameter store using a function
 def store_access_token(ssm_client, access_token):
