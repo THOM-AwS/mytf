@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     payload_response = []
     current_access_token = get_latest_access_token(ssm_client)
     
-    dynamic_endpoints = generate_endpoints()
+    # dynamic_endpoints = generate_endpoints()
     
     static_endpoints = [
         "activities/heart/date/today/30d.json",
@@ -24,7 +24,7 @@ def lambda_handler(event, context):
         # "activities/elevation/date/today/7d.json",
     ]
     
-    endpoints = dynamic_endpoints + static_endpoints
+    endpoints = static_endpoints # dynamic_endpoints + 
 
     for endpoint in endpoints:
         print(endpoint)
@@ -73,7 +73,7 @@ def generate_endpoints():
     endpoints = []
     today = datetime.now()
 
-    for i in range(30):
+    for i in range(3):
         date = today - timedelta(days=i)
         formatted_date = date.strftime("%Y-%m-%d")
         endpoint = f"{base_url}{formatted_date}{detail_level}"
