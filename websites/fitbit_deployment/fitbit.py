@@ -16,9 +16,9 @@ def lambda_handler(event, context):
     payload_response = []
     current_access_token = get_latest_access_token(ssm_client)
     endpoints = [
-        "activities/heart/date/today/7d.json",
+        "activities/heart/date/today/30d.json",
         # "activities/activityCalories/date/today/7d.json",
-        "activities/steps/date/today/7d.json",
+        "activities/steps/date/today/30d.json",
         # "activities/calories/date/today/7d.json",
         # "activities/distance/date/today/7d.json",
         # "activities/floors/date/today/7d.json",
