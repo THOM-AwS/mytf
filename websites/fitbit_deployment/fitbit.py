@@ -8,20 +8,26 @@ FITBIT_CLIENT_ID = os.environ.get("FITBIT_CLIENT_ID")
 ssm_client = boto3.client("ssm", region_name="us-east-1")
 
 def lambda_handler(event, context):
+    print("runnning...")
     payload_response = []
     current_access_token = get_latest_access_token(ssm_client)
-    endpoints = [
+    
+    dynamic_endpoints = generate_endpoints()
+    
+    static_endpoints = [
         "activities/heart/date/today/30d.json",
-        "activities/heart/date/today/30d/15min.json"
-        # "activities/activityCalories/date/today/7d.json",
         "activities/steps/date/today/30d.json",
+        # "activities/activityCalories/date/today/7d.json",
         # "activities/calories/date/today/7d.json",
         # "activities/distance/date/today/7d.json",
         # "activities/floors/date/today/7d.json",
         # "activities/elevation/date/today/7d.json",
     ]
+    
+    endpoints = dynamic_endpoints + static_endpoints
 
     for endpoint in endpoints:
+        print(endpoint)
         data = auth(current_access_token, endpoint)
         payload_response.append(data)
     
@@ -60,6 +66,23 @@ def auth(current_access_token, endpoint):
                 return {"statusCode": 200, "body": response.json()}
 
     return {"statusCode": response.status_code, "body": response.text}
+
+def generate_endpoints():
+    base_url = "activities/heart/date/"
+    detail_level = "/1d/15min.json"
+    endpoints = []
+    today = datetime.now()
+
+    for i in range(30):
+        # Calculate the date for each day
+        date = today - timedelta(days=i)
+        formatted_date = date.strftime("%Y-%m-%d")  # Format the date as 'yyyy-mm-dd'
+        
+        # Create the endpoint and add it to the list
+        endpoint = f"{base_url}{formatted_date}{detail_level}"
+        endpoints.append(endpoint)
+
+    return endpoints
 
 # Store the access token in parameter store using a function
 def store_access_token(ssm_client, access_token):
@@ -144,5 +167,5 @@ def refresh_access_token(ssm_client):
     return None
 
 
-# if __name__ == "__main__":
-#     lambda_handler()
+if __name__ == "__main__":
+    lambda_handler(1,2)
