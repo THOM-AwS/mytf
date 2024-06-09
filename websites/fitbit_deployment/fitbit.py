@@ -29,7 +29,7 @@ def lambda_handler(event, context):
     for endpoint in endpoints:
         print(endpoint)
         # Attempt to retrieve data from DynamoDB
-        data = get_data(endpoint)
+        data = get_data_from_ddb(endpoint)
         if not data:
             # If data not in DDB, fetch from Fitbit API
             data = auth(current_access_token, endpoint)
