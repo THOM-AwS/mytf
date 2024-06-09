@@ -16,3 +16,25 @@ resource "aws_dynamodb_table" "generic_data" {
     enabled        = true
   }
 }
+
+resource "aws_dynamodb_table" "ddb_website_cache" {
+  name         = "WebSiteCache"
+  billing_mode = "PAY_PER_REQUEST" # On-demand capacity mode for cost-effectiveness
+  hash_key     = "Date"
+  range_key    = "TTL" # Adding TTL as a range key
+
+  attribute {
+    name = "Date"
+    type = "S"
+  }
+
+  attribute {
+    name = "TTL"
+    type = "N"
+  }
+
+  ttl {
+    attribute_name = "TTL"
+    enabled        = true
+  }
+}

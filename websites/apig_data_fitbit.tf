@@ -26,19 +26,35 @@ resource "aws_lambda_permission" "fitbit_get" {
   source_arn    = "${aws_api_gateway_rest_api.generic_api.execution_arn}/*/*/*"
 }
 
+# resource "null_resource" "create_zip" {
+#   triggers = {
+#     checksum = filebase64sha256("fitbit_deployment/fitbit.py")
+#   }
+#   provisioner "local-exec" {
+#     command     = <<-EOT
+#       apk add zip
+#       cd fitbit_deployment && zip -r ../fitbit.zip *
+#     EOT
+#     interpreter = ["/bin/sh", "-c"]
+#   }
+# }
+
 resource "null_resource" "create_zip" {
   triggers = {
     checksum = filebase64sha256("fitbit_deployment/fitbit.py")
   }
   provisioner "local-exec" {
-    command     = <<-EOT
-      apk add zip
-      cd fitbit_deployment && zip -r ../fitbit.zip *
+    command = <<EOT
+      apk update && apk add zip || (sleep 10 && apk add zip)
+      if [ $? -eq 0 ]; then
+        cd fitbit_deployment && zip -r ../fitbit.zip *
+      else
+        echo "Failed to install zip utility"
+        exit 1
+      fi
     EOT
-    interpreter = ["/bin/sh", "-c"]
   }
 }
-
 
 # apig part
 
