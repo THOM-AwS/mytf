@@ -1,107 +1,76 @@
 name: Makefile CI
- 
+
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@main
-    - name: Lint Terraform
-      uses: actionshub/terraform-lint@main
+      - name: Check out code
+        uses: actions/checkout@main
+      - name: Lint Terraform
+        uses: actionshub/terraform-lint@main
 
   hamer_cloud-plan:
     runs-on: ubuntu-latest
     needs: lint
     env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
     steps:
-    - uses: actions/checkout@v2    
-    - name: hamer plan
-      run: make plan
+      - uses: actions/checkout@v2
+      - name: hamer plan
+        run: make plan
 
   hamer_cloud-apply:
     runs-on: ubuntu-latest
     needs: hamer_cloud-plan
     environment: hamercloud
     env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
     steps:
-    - uses: actions/checkout@v2    
-    - name: Hamer Apply
-      run: make applyAuto
-
-  wcplumbing_com_au-plan:
-    runs-on: ubuntu-latest
-    needs: lint
-    env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
-      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-      region: ${{secrets.AWS_REGION}}
-      SUBFOLDER: websites
-    steps:
-    - uses: actions/checkout@v2 
-    - name: wcplumbing Plan
-      env:
-        TERRAFORM_WORKSPACE: wcplumbing
-      run: make plan
-
-  wcplumbing_com_au-apply:
-    runs-on: ubuntu-latest
-    needs: wcplumbing_com_au-plan
-    environment: wcplumbing
-    env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
-      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-      region: ${{secrets.AWS_REGION}}
-      SUBFOLDER: websites
-    steps:
-    - uses: actions/checkout@v2 
-    - name: wcplumbing Apply
-      env:
-        TERRAFORM_WORKSPACE: wcplumbing
-      run: make applyAuto
+      - uses: actions/checkout@v2
+      - name: Hamer Apply
+        run: make applyAuto
 
   ThomasHamerVPC-plan:
     runs-on: ubuntu-latest
     needs: lint
     env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: vpc
     steps:
-    - uses: actions/checkout@v2 
-    - name: VPC Plan
-      env:
-        TERRAFORM_WORKSPACE: prod
-      run: make plan
+      - uses: actions/checkout@v2
+      - name: VPC Plan
+        env:
+          TERRAFORM_WORKSPACE: prod
+        run: make plan
 
   ThomasHamerVPC-apply:
     runs-on: ubuntu-latest
     needs: ThomasHamerVPC-plan
     environment: thomashamer_vpc
     env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} 
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
       AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: vpc
     steps:
-    - uses: actions/checkout@v2 
-    - name: ThomasHamer_VPC-Apply
-      env:
-        TERRAFORM_WORKSPACE: prod
-      run: make applyAuto
+      - uses: actions/checkout@v2
+      - name: ThomasHamer_VPC-Apply
+        env:
+          TERRAFORM_WORKSPACE: prod
+        run: make applyAuto
