@@ -25,7 +25,7 @@ jobs:
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: hamer plan
         run: make plan
 
@@ -40,7 +40,7 @@ jobs:
       SUBFOLDER: websites
       TERRAFORM_WORKSPACE: hamer
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Hamer Apply
         run: make applyAuto
 
@@ -53,7 +53,7 @@ jobs:
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: vpc
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: VPC Plan
         env:
           TERRAFORM_WORKSPACE: prod
@@ -69,7 +69,7 @@ jobs:
       region: ${{secrets.AWS_REGION}}
       SUBFOLDER: vpc
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: ThomasHamer_VPC-Apply
         env:
           TERRAFORM_WORKSPACE: prod
