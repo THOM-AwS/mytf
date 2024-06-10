@@ -4,16 +4,16 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-DYNAMODB_TABLE_NAME = "WebSiteCache"
 FITBIT_CLIENT_ID = os.environ.get("FITBIT_CLIENT_ID")
 ssm_client = boto3.client("ssm", region_name="us-east-1")
-ddb_client = boto3.client('dynamodb', region_name="us-east-1")
 
 def lambda_handler(event, context):
+    print("runnning...")
     payload_response = []
     current_access_token = get_latest_access_token(ssm_client)
     
-    # dynamic_endpoints = generate_endpoints()
+    dynamic_endpoints = generate_endpoints()
+    
     static_endpoints = [
         "activities/heart/date/today/30d.json",
         "activities/steps/date/today/30d.json",
@@ -24,18 +24,11 @@ def lambda_handler(event, context):
         # "activities/elevation/date/today/7d.json",
     ]
     
-    endpoints = static_endpoints
+    endpoints = dynamic_endpoints + static_endpoints
 
     for endpoint in endpoints:
         print(endpoint)
-        # Attempt to retrieve data from DynamoDB
-        data = get_data_from_ddb(endpoint)
-        if not data:
-            # If data not in DDB, fetch from Fitbit API
-            data = auth(current_access_token, endpoint)
-            if data.get("statusCode") == 200:
-                # Store fetched data in DDB
-                store_data_to_ddb(endpoint, data)
+        data = auth(current_access_token, endpoint)
         payload_response.append(data)
     
     api_gateway_response = {
@@ -80,7 +73,7 @@ def generate_endpoints():
     endpoints = []
     today = datetime.now()
 
-    for i in range(3):
+    for i in range(30):
         date = today - timedelta(days=i)
         formatted_date = date.strftime("%Y-%m-%d")
         endpoint = f"{base_url}{formatted_date}{detail_level}"
