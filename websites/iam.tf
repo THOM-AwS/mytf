@@ -82,77 +82,95 @@ resource "aws_iam_role_policy" "apigw_cloudwatch_logging_policy" {
 }
 
 
-resource "aws_iam_role" "fitbit_lambda_exec_role" {
-  name = "fitbit_lambda_role"
+# Fitbit Fetch Lambda Role (SSM + DDB write + CloudWatch metrics)
+resource "aws_iam_role" "fitbit_fetch_role" {
+  name = "fitbit_fetch_role"
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": [
-          "lambda.amazonaws.com",
-          "apigateway.amazonaws.com"
-          ]
-      }
-    }
-  ]
-}
-EOF
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+    }]
+  })
 }
 
-resource "aws_iam_policy" "fitbit_lambda_policy" {
-  name = "fitbit_lambda_ssm_policy"
+resource "aws_iam_policy" "fitbit_fetch_policy" {
+  name = "fitbit_fetch_policy"
 
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow",
-        Action = [
-          "ssm:GetParameters",
-          "ssm:GetParameter",
-          "ssm:PutParameter"
-        ],
-        Resource = "*"
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter", "ssm:PutParameter"]
+        Resource = "arn:aws:ssm:us-east-1:${data.aws_caller_identity.current.account_id}:parameter/*"
       },
       {
-        Effect = "Allow",
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ],
-        Resource = "*"
+        Effect   = "Allow"
+        Action   = ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:Scan"]
+        Resource = aws_dynamodb_table.fitbit_data.arn
       },
       {
-        Effect = "Allow",
-        Action = [
-          "lambda:InvokeFunction"
-        ],
-        Resource = "*"
+        Effect   = "Allow"
+        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+        Resource = "arn:aws:logs:*:*:*"
       },
       {
-        Effect = "Allow",
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:Query",
-          "dynamodb:Scan",
-          "dynamodb:DeleteItem"
-        ],
+        Effect   = "Allow"
+        Action   = ["cloudwatch:PutMetricData"]
         Resource = "*"
       }
     ]
   })
 }
 
+resource "aws_iam_role_policy_attachment" "fitbit_fetch_attach" {
+  policy_arn = aws_iam_policy.fitbit_fetch_policy.arn
+  role       = aws_iam_role.fitbit_fetch_role.name
+}
 
-resource "aws_iam_role_policy_attachment" "fitbit_lambda_attach" {
-  policy_arn = aws_iam_policy.fitbit_lambda_policy.arn
-  role       = aws_iam_role.fitbit_lambda_exec_role.name
+# Fitbit API Lambda Role (DDB read only)
+resource "aws_iam_role" "fitbit_api_role" {
+  name = "fitbit_api_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = ["lambda.amazonaws.com", "apigateway.amazonaws.com"] }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "fitbit_api_policy" {
+  name = "fitbit_api_policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:Scan"]
+        Resource = aws_dynamodb_table.fitbit_data.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["lambda:InvokeFunction"]
+        Resource = "arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:fitbit_api"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "fitbit_api_attach" {
+  policy_arn = aws_iam_policy.fitbit_api_policy.arn
+  role       = aws_iam_role.fitbit_api_role.name
 }

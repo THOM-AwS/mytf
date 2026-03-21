@@ -38,3 +38,23 @@ resource "aws_dynamodb_table" "ddb_website_cache" {
     enabled        = true
   }
 }
+
+resource "aws_dynamodb_table" "fitbit_data" {
+  name         = "fitbitData"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "date"
+
+  attribute {
+    name = "date"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+
+  tags = {
+    Stack = "hamer.cloud"
+  }
+}
