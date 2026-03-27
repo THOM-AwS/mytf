@@ -8,34 +8,27 @@ data "aws_ssm_parameter" "client_secret" {
 }
 
 # --- Zip Lambdas ---
-resource "null_resource" "zip_fitbit_fetch" {
-  triggers = {
-    checksum = filemd5("fitbit_fetch/fitbit_fetch.py")
-  }
-  provisioner "local-exec" {
-    command = "cd fitbit_fetch && zip -r ../fitbit_fetch.zip fitbit_fetch.py"
-  }
+data "archive_file" "fitbit_fetch_zip" {
+  type        = "zip"
+  source_file = "${path.module}/fitbit_fetch/fitbit_fetch.py"
+  output_path = "${path.module}/fitbit_fetch.zip"
 }
 
-resource "null_resource" "zip_fitbit_api" {
-  triggers = {
-    checksum = filemd5("fitbit_api/fitbit_api.py")
-  }
-  provisioner "local-exec" {
-    command = "cd fitbit_api && zip -r ../fitbit_api.zip fitbit_api.py"
-  }
+data "archive_file" "fitbit_api_zip" {
+  type        = "zip"
+  source_file = "${path.module}/fitbit_api/fitbit_api.py"
+  output_path = "${path.module}/fitbit_api.zip"
 }
 
 # --- Fitbit Fetch Lambda (scheduled) ---
 resource "aws_lambda_function" "fitbit_fetch" {
-  depends_on       = [null_resource.zip_fitbit_fetch]
-  filename         = "fitbit_fetch.zip"
+  filename         = data.archive_file.fitbit_fetch_zip.output_path
   function_name    = "fitbit_fetch"
   role             = aws_iam_role.fitbit_fetch_role.arn
   handler          = "fitbit_fetch.lambda_handler"
   runtime          = "python3.11"
   timeout          = 120
-  source_code_hash = filebase64sha256("fitbit_fetch.zip")
+  source_code_hash = data.archive_file.fitbit_fetch_zip.output_base64sha256
   environment {
     variables = {
       FITBIT_CLIENT_ID     = data.aws_ssm_parameter.client_id.value
@@ -69,14 +62,13 @@ resource "aws_lambda_permission" "fitbit_eventbridge" {
 
 # --- Fitbit API Lambda (API Gateway) ---
 resource "aws_lambda_function" "fitbit_api" {
-  depends_on       = [null_resource.zip_fitbit_api]
-  filename         = "fitbit_api.zip"
+  filename         = data.archive_file.fitbit_api_zip.output_path
   function_name    = "fitbit_api"
   role             = aws_iam_role.fitbit_api_role.arn
   handler          = "fitbit_api.lambda_handler"
   runtime          = "python3.11"
   timeout          = 30
-  source_code_hash = filebase64sha256("fitbit_api.zip")
+  source_code_hash = data.archive_file.fitbit_api_zip.output_base64sha256
   tags             = { Stack = "hamer.cloud" }
 }
 
@@ -151,7 +143,7 @@ resource "aws_api_gateway_integration_response" "fitbit_options_response" {
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://hamer.cloud'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
 
