@@ -35,6 +35,20 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.7"
+      - name: Configure AWS Profile
+        run: |
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << 'CREDS'
+          [hamer]
+          aws_access_key_id = placeholder
+          aws_secret_access_key = placeholder
+          CREDS
+          cat > ~/.aws/config << 'CONF'
+          [profile hamer]
+          region = us-east-1
+          CONF
+          sed -i "s|aws_access_key_id = placeholder|aws_access_key_id = ${AWS_ACCESS_KEY_ID}|" ~/.aws/credentials
+          sed -i "s|aws_secret_access_key = placeholder|aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}|" ~/.aws/credentials
       - name: Terraform Init
         run: terraform init
       - name: Select Workspace
@@ -58,6 +72,20 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.7"
+      - name: Configure AWS Profile
+        run: |
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << 'CREDS'
+          [hamer]
+          aws_access_key_id = placeholder
+          aws_secret_access_key = placeholder
+          CREDS
+          cat > ~/.aws/config << 'CONF'
+          [profile hamer]
+          region = us-east-1
+          CONF
+          sed -i "s|aws_access_key_id = placeholder|aws_access_key_id = ${AWS_ACCESS_KEY_ID}|" ~/.aws/credentials
+          sed -i "s|aws_secret_access_key = placeholder|aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}|" ~/.aws/credentials
       - name: Terraform Init
         run: terraform init
       - name: Select Workspace
@@ -80,6 +108,20 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.7"
+      - name: Configure AWS Profile
+        run: |
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << 'CREDS'
+          [hamer]
+          aws_access_key_id = placeholder
+          aws_secret_access_key = placeholder
+          CREDS
+          cat > ~/.aws/config << 'CONF'
+          [profile hamer]
+          region = us-east-1
+          CONF
+          sed -i "s|aws_access_key_id = placeholder|aws_access_key_id = ${AWS_ACCESS_KEY_ID}|" ~/.aws/credentials
+          sed -i "s|aws_secret_access_key = placeholder|aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}|" ~/.aws/credentials
       - name: Terraform Init
         run: terraform init
       - name: Select Workspace
@@ -103,6 +145,20 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.7"
+      - name: Configure AWS Profile
+        run: |
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << 'CREDS'
+          [hamer]
+          aws_access_key_id = placeholder
+          aws_secret_access_key = placeholder
+          CREDS
+          cat > ~/.aws/config << 'CONF'
+          [profile hamer]
+          region = us-east-1
+          CONF
+          sed -i "s|aws_access_key_id = placeholder|aws_access_key_id = ${AWS_ACCESS_KEY_ID}|" ~/.aws/credentials
+          sed -i "s|aws_secret_access_key = placeholder|aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}|" ~/.aws/credentials
       - name: Terraform Init
         run: terraform init
       - name: Select Workspace
