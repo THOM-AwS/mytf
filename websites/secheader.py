@@ -1,7 +1,5 @@
-import boto3
 import json
 
-s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
     try:
@@ -9,22 +7,9 @@ def lambda_handler(event, context):
         request = record['cf']['request']
         response = record['cf']['response'] if 'response' in record['cf'] else None
 
-        # Add CORS headers
         response_headers = response['headers'] if response else request['headers']
-        cors_headers = [
-            {'key': 'access-control-allow-origin', 'value': '*'},
-            {'key': 'access-control-allow-methods', 'value': 'GET, POST, HEAD, OPTIONS'},
-            {'key': 'access-control-allow-headers', 'value': 'content-type'},
-        ]
-        for header in cors_headers:
-            key = header['key'].lower()
-            value = header['value']
-            if key in response_headers:
-                response_headers[key].append({'key': key, 'value': value})
-            else:
-                response_headers[key] = [{'key': key, 'value': value}]
 
-        # Add security headers
+        # hamer.cloud-specific security headers
         security_headers = [
             {'key': 'content-security-policy', 'value': (
                 "default-src 'self'; "
@@ -36,12 +21,11 @@ def lambda_handler(event, context):
                 "frame-src 'self' https://www.youtube.com https://cdn.jsdelivr.net; "
                 "object-src 'none'; "
                 "form-action 'self'; "
-                "frame-ancestors 'none'; "
+                "frame-ancestors 'self'; "
                 "upgrade-insecure-requests"
             )},
             {'key': 'strict-transport-security', 'value': 'max-age=63072000; includeSubdomains; preload'},
             {'key': 'x-content-type-options', 'value': 'nosniff'},
-            {'key': 'x-xss-protection', 'value': '1; mode=block'},
             {'key': 'referrer-policy', 'value': 'strict-origin-when-cross-origin'},
             {'key': 'permissions-policy', 'value': (
                 "accelerometer=(), "
@@ -59,10 +43,7 @@ def lambda_handler(event, context):
         for header in security_headers:
             key = header['key'].lower()
             value = header['value']
-            if key in response_headers:
-                response_headers[key].append({'key': key, 'value': value})
-            else:
-                response_headers[key] = [{'key': key, 'value': value}]
+            response_headers[key] = [{'key': key, 'value': value}]
 
         if response:
             return response
@@ -74,9 +55,8 @@ def lambda_handler(event, context):
         return {
             'status': '500',
             'statusDescription': 'Internal Server Error',
-            'body': json.dumps({'message': f"Error in lambda_handler: {str(e)}"}),
+            'body': json.dumps({'message': f"Error: {str(e)}"}),
             'headers': {
                 'content-type': [{'key': 'content-type', 'value': 'application/json'}],
             },
         }
- 
