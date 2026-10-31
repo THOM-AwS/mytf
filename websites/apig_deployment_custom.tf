@@ -8,8 +8,38 @@ resource "aws_api_gateway_deployment" "deploy_api" {
     aws_api_gateway_integration.robots_integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.generic_api.id
+  # The API is built from separate resources, so rest_api.body is always null and
+  # hashing it never changed. Hash the resources instead so any route, method or
+  # integration change creates a new deployment and the stage picks it up.
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.generic_api.body))
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.generic_resource,
+      aws_api_gateway_resource.fitbit_resource,
+      aws_api_gateway_resource.robots_resource,
+      aws_api_gateway_method.generic_get,
+      aws_api_gateway_method.generic_post,
+      aws_api_gateway_method.fitbit_get,
+      aws_api_gateway_method.fitbit_options,
+      aws_api_gateway_method.robots_get,
+      aws_api_gateway_integration.ddb_get,
+      aws_api_gateway_integration.ddb_integration,
+      aws_api_gateway_integration.fitbit_api_integration,
+      aws_api_gateway_integration.fitbit_options_integration,
+      aws_api_gateway_integration.robots_integration,
+      aws_api_gateway_method_response.get_200,
+      aws_api_gateway_method_response.post_200,
+      aws_api_gateway_method_response.fitbit_get_200,
+      aws_api_gateway_method_response.fitbit_options_200,
+      aws_api_gateway_method_response.robots_200,
+      aws_api_gateway_integration_response.fitbit_options_response,
+      aws_api_gateway_integration_response.robots_response,
+    ]))
+  }
+
+  # The prod stage points at this deployment; create the new one before the old
+  # one is deleted or the delete fails with an active-stage error.
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
