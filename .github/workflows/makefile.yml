@@ -56,9 +56,12 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -no-color
 
+  # Needs the bootstrap apply: the roles here reference hamercloud-boundary.
+  # The bootstrap apply only runs on push to master, so this no longer runs
+  # for pull requests either.
   hamer_cloud-apply:
     runs-on: ubuntu-latest
-    needs: hamer_cloud-plan
+    needs: [hamer_cloud-plan, hamercloud_bootstrap-apply]
     environment: hamercloud
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -92,6 +95,52 @@ jobs:
         run: terraform workspace select hamer || terraform workspace new hamer
       - name: Terraform Apply
         run: terraform apply -auto-approve -no-color
+
+  # One-time CI roles for THOM-AwS/hamercloud. Moves to hamercloud
+  # infra/bootstrap (same state key) once that repo plans through them.
+  hamercloud_bootstrap-plan:
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+    defaults:
+      run:
+        working-directory: hamercloud_bootstrap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.7"
+      - name: Terraform Init
+        run: terraform init -input=false
+      - name: Terraform Validate
+        run: terraform validate -no-color
+      - name: Terraform Plan
+        run: terraform plan -input=false -no-color -lock=false
+
+  hamercloud_bootstrap-apply:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs: hamercloud_bootstrap-plan
+    environment: hamercloud
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+    defaults:
+      run:
+        working-directory: hamercloud_bootstrap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.7"
+      - name: Terraform Init
+        run: terraform init -input=false
+      - name: Terraform Apply
+        run: terraform apply -input=false -no-color -auto-approve
 
   ThomasHamerVPC-plan:
     runs-on: ubuntu-latest

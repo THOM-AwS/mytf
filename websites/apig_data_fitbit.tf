@@ -1,12 +1,3 @@
-# --- Fitbit SSM Parameters ---
-data "aws_ssm_parameter" "client_id" {
-  name = "fitbit_client_id"
-}
-
-data "aws_ssm_parameter" "client_secret" {
-  name = "fitbit_client_secret"
-}
-
 # --- Zip Lambdas ---
 data "archive_file" "fitbit_fetch_zip" {
   type        = "zip"
@@ -31,9 +22,9 @@ resource "aws_lambda_function" "fitbit_fetch" {
   source_code_hash = data.archive_file.fitbit_fetch_zip.output_base64sha256
   environment {
     variables = {
-      FITBIT_CLIENT_ID     = data.aws_ssm_parameter.client_id.value
-      FITBIT_CLIENT_SECRET = data.aws_ssm_parameter.client_secret.value
-      TABLE_NAME           = aws_dynamodb_table.fitbit_data.name
+      # Client id and secret are read from SSM at runtime, so they are not
+      # in the function config or Terraform state.
+      TABLE_NAME = aws_dynamodb_table.fitbit_data.name
     }
   }
   tags = { Stack = "hamer.cloud" }

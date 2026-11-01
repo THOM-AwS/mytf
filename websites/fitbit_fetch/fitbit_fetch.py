@@ -14,8 +14,10 @@ import boto3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-FITBIT_CLIENT_ID = os.environ.get("FITBIT_CLIENT_ID")
-FITBIT_CLIENT_SECRET = os.environ.get("FITBIT_CLIENT_SECRET")
+# Fitbit app credentials live in SSM, read at call time so they are never in
+# the function configuration or Terraform state.
+CLIENT_ID_PARAM = "fitbit_client_id"
+CLIENT_SECRET_PARAM = "fitbit_client_secret"
 TABLE_NAME = os.environ.get("TABLE_NAME", "fitbitData")
 BASE_URL = "https://api.fitbit.com"
 
@@ -31,7 +33,8 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 def get_ssm_param(name):
-    return ssm.get_parameter(Name=name)["Parameter"]["Value"]
+    # WithDecryption is a no-op for String and required once these become SecureString.
+    return ssm.get_parameter(Name=name, WithDecryption=True)["Parameter"]["Value"]
 
 
 def put_ssm_param(name, value):
@@ -47,9 +50,9 @@ def fitbit_get(access_token, endpoint):
 
 def refresh_tokens():
     refresh_token = get_ssm_param("refresh_token")
-    auth = base64.b64encode(
-        f"{FITBIT_CLIENT_ID}:{FITBIT_CLIENT_SECRET}".encode()
-    ).decode()
+    client_id = get_ssm_param(CLIENT_ID_PARAM)
+    client_secret = get_ssm_param(CLIENT_SECRET_PARAM)
+    auth = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     data = urlencode({
         "grant_type": "refresh_token",
         "refresh_token": refresh_token,

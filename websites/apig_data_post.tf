@@ -22,7 +22,8 @@ resource "aws_api_gateway_method" "generic_post" {
 
 
 resource "aws_iam_role" "lambda_logging" {
-  name = "LambdaLoggingRole"
+  name                 = "LambdaLoggingRole"
+  permissions_boundary = local.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -68,7 +69,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_lambda_function" "log_payload" {
-  depends_on       = [null_resource.zip_lambda]
   function_name    = "LogPayloadLambda"
   filename         = "lambda_package.zip"
   source_code_hash = filebase64sha256("lambda_package.zip")
@@ -82,17 +82,6 @@ resource "aws_lambda_function" "log_payload" {
   }
 }
 
-resource "null_resource" "zip_lambda" {
-  triggers = {
-    lambda_hash = filemd5("lambda.py")
-  }
-  provisioner "local-exec" {
-    command = "apk add --no-cache zip && zip -r lambda_package.zip lambda.py"
-  }
-  provisioner "local-exec" {
-    command = "sleep 10"
-  }
-}
 
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowAPIGatewayInvoke"

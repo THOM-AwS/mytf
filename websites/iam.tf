@@ -1,5 +1,6 @@
 resource "aws_iam_role" "api_gw_to_ddb" {
-  name = "ApiGatewayToDynamoDBRole"
+  name                 = "ApiGatewayToDynamoDBRole"
+  permissions_boundary = local.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -31,7 +32,7 @@ resource "aws_iam_role_policy" "api_gw_ddb_access" {
           "dynamodb:Scan"
         ],
         Effect   = "Allow",
-        Resource = "*" #aws_dynamodb_table.generic_data.arn
+        Resource = aws_dynamodb_table.generic_data.arn
       }
     ]
   })
@@ -39,7 +40,8 @@ resource "aws_iam_role_policy" "api_gw_ddb_access" {
 
 
 resource "aws_iam_role" "apigw_cloudwatch_logging_role" {
-  name = "APIGWCWLoggingRole"
+  name                 = "APIGWCWLoggingRole"
+  permissions_boundary = local.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -84,7 +86,8 @@ resource "aws_iam_role_policy" "apigw_cloudwatch_logging_policy" {
 
 # Fitbit Fetch Lambda Role (SSM + DDB write + CloudWatch metrics)
 resource "aws_iam_role" "fitbit_fetch_role" {
-  name = "fitbit_fetch_role"
+  name                 = "fitbit_fetch_role"
+  permissions_boundary = local.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -103,9 +106,10 @@ resource "aws_iam_policy" "fitbit_fetch_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["ssm:GetParameter", "ssm:PutParameter"]
-        Resource = "arn:aws:ssm:us-east-1:${data.aws_caller_identity.current.account_id}:parameter/*"
+        Effect = "Allow"
+        Action = ["ssm:GetParameter", "ssm:PutParameter"]
+        Resource = [for n in ["fitbit_client_id", "fitbit_client_secret", "access_token", "refresh_token"] :
+        "arn:aws:ssm:us-east-1:${data.aws_caller_identity.current.account_id}:parameter/${n}"]
       },
       {
         Effect   = "Allow"
@@ -133,7 +137,8 @@ resource "aws_iam_role_policy_attachment" "fitbit_fetch_attach" {
 
 # Fitbit API Lambda Role (DDB read only)
 resource "aws_iam_role" "fitbit_api_role" {
-  name = "fitbit_api_role"
+  name                 = "fitbit_api_role"
+  permissions_boundary = local.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

@@ -28,7 +28,6 @@ resource "aws_api_gateway_method_response" "get_200" {
 }
 
 resource "aws_lambda_function" "get" {
-  depends_on       = [null_resource.zip_lambda_get]
   function_name    = "get_loc_Lambda"
   filename         = "lambda_package_get.zip"
   source_code_hash = filebase64sha256("lambda_package_get.zip")
@@ -42,18 +41,6 @@ resource "aws_lambda_function" "get" {
   }
 }
 
-resource "null_resource" "zip_lambda_get" {
-  depends_on = [null_resource.zip_lambda]
-  triggers = {
-    lambda_hash = filemd5("lambdaGet.py")
-  }
-  provisioner "local-exec" {
-    command = "apk add --no-cache zip && zip -r lambda_package_get.zip lambdaGet.py"
-  }
-  provisioner "local-exec" {
-    command = "sleep 10"
-  }
-}
 
 resource "aws_lambda_permission" "apigw_get" {
   statement_id  = "AllowAPIGatewayInvoke"
