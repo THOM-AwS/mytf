@@ -103,6 +103,7 @@ locals {
   table_names    = ["genericDataTable", "WebSiteCache", "fitbitData"]
 
   stack_role_arns   = concat([for n in local.stack_role_names : "${local.iam_arn}:role/${n}"], ["${local.iam_arn}:role/hamercloud-*"])
+  bounded_role_arns = [for a in local.stack_role_arns : a if !endswith(a, "/website-hamer-cloud-execution_role")]
   stack_policy_arns = concat([for n in local.stack_policy_names : "${local.iam_arn}:policy/${n}"], ["${local.iam_arn}:policy/hamercloud-*"])
   site_user_arn     = "${local.iam_arn}:user/website-users/${local.site_user_name}"
 
@@ -178,7 +179,7 @@ data "aws_iam_policy_document" "trust" {
 data "aws_iam_policy_document" "boundary" {
   statement {
     sid       = "Logs"
-    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogGroups", "logs:DescribeLogStreams", "logs:GetLogEvents", "logs:FilterLogEvents"]
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogGroups", "logs:DescribeLogStreams"]
     resources = ["arn:aws:logs:*:${local.account_id}:*"]
   }
 
@@ -314,10 +315,13 @@ data "aws_iam_policy_document" "apply_iam" {
     resources = [local.site_user_arn]
   }
 
+  # Only roles that carry the boundary can be passed. The module's Lambda@Edge
+  # role has none (module v2 removes it), so it is left out: passing it to a
+  # stack Lambda would run code outside the boundary.
   statement {
     sid       = "PassStackRoles"
     actions   = ["iam:PassRole"]
-    resources = local.stack_role_arns
+    resources = local.bounded_role_arns
 
     condition {
       test     = "StringEquals"
