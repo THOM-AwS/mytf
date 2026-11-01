@@ -4,6 +4,11 @@ terraform {
       version = "5.18.0"
       source  = "hashicorp/aws"
     }
+    # Only so the removed null_resources can be destroyed. Drop once they are
+    # out of state.
+    null = {
+      source = "hashicorp/null"
+    }
   }
 }
 
