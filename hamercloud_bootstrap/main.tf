@@ -79,14 +79,14 @@ locals {
 
   distribution_id = "E3EZ46MUZPKKIB"
   oac_id          = "E1UBXIX50M958W"
-  oai_id          = "E4XB766TKAB6L"
+  headers_policy  = "c342a400-e14a-4f05-8d4b-b75be97a7b0c"
   hosted_zone_id  = "Z01871282UNAOFQSTNCVD"
   rest_api_id     = "nnsw0xovm4"
   api_domain      = "api.hamer.cloud"
 
   site_buckets = ["hamer.cloud", "www.hamer.cloud", "hamer.cloud-logging"]
 
-  # Existing roles, policies and user the main stack manages. Their names
+  # Existing roles and policies the main stack manages. Their names
   # predate any prefix, so they are listed explicitly; new ones use hamercloud-*.
   stack_role_names = [
     "LambdaLoggingRole",
@@ -94,18 +94,14 @@ locals {
     "APIGWCWLoggingRole",
     "fitbit_fetch_role",
     "fitbit_api_role",
-    "website-hamer-cloud-execution_role",
   ]
   stack_policy_names = ["LambdaDynamoDBAccess", "fitbit_fetch_policy", "fitbit_api_policy"]
-  site_user_name     = "website-hamer-cloud-user"
 
-  function_names = ["get_loc_Lambda", "LogPayloadLambda", "fitbit_fetch", "fitbit_api", "hamer-cloud-sec-headers"]
+  function_names = ["get_loc_Lambda", "LogPayloadLambda", "fitbit_fetch", "fitbit_api"]
   table_names    = ["genericDataTable", "WebSiteCache", "fitbitData"]
 
   stack_role_arns   = concat([for n in local.stack_role_names : "${local.iam_arn}:role/${n}"], ["${local.iam_arn}:role/hamercloud-*"])
-  bounded_role_arns = [for a in local.stack_role_arns : a if !endswith(a, "/website-hamer-cloud-execution_role")]
   stack_policy_arns = concat([for n in local.stack_policy_names : "${local.iam_arn}:policy/${n}"], ["${local.iam_arn}:policy/hamercloud-*"])
-  site_user_arn     = "${local.iam_arn}:user/website-users/${local.site_user_name}"
 
   function_arns = flatten([for n in local.function_names : [
     "arn:aws:lambda:${local.region}:${local.account_id}:function:${n}",
@@ -117,7 +113,7 @@ locals {
   ]])
   bucket_arns     = flatten([for b in local.site_buckets : ["arn:aws:s3:::${b}", "arn:aws:s3:::${b}/*"]])
   distribution    = "arn:aws:cloudfront::${local.account_id}:distribution/${local.distribution_id}"
-  cloudfront_arns = [local.distribution, "arn:aws:cloudfront::${local.account_id}:origin-access-control/${local.oac_id}", "arn:aws:cloudfront::${local.account_id}:origin-access-identity/${local.oai_id}"]
+  cloudfront_arns = [local.distribution, "arn:aws:cloudfront::${local.account_id}:origin-access-control/${local.oac_id}", "arn:aws:cloudfront::${local.account_id}:response-headers-policy/${local.headers_policy}"]
   apigw_arns = [
     "arn:aws:apigateway:${local.region}::/restapis/${local.rest_api_id}",
     "arn:aws:apigateway:${local.region}::/restapis/${local.rest_api_id}/*",
@@ -300,45 +296,17 @@ data "aws_iam_policy_document" "apply_iam" {
     resources = local.stack_policy_arns
   }
 
-  # The module's deploy user can only be read or removed. Granting it a policy
-  # or a new key would give an unbounded human-style principal.
-  statement {
-    sid = "RemoveSiteUser"
-    actions = [
-      "iam:DeleteUser",
-      "iam:DeleteAccessKey",
-      "iam:DeleteUserPolicy",
-      "iam:DetachUserPolicy",
-      "iam:TagUser",
-      "iam:UntagUser",
-    ]
-    resources = [local.site_user_arn]
-  }
-
-  # Only roles that carry the boundary can be passed. The module's Lambda@Edge
-  # role has none (module v2 removes it), so it is left out: passing it to a
-  # stack Lambda would run code outside the boundary.
+  # Every stack role carries the boundary, so passing one cannot run code
+  # outside it.
   statement {
     sid       = "PassStackRoles"
     actions   = ["iam:PassRole"]
-    resources = local.bounded_role_arns
+    resources = local.stack_role_arns
 
     condition {
       test     = "StringEquals"
       variable = "iam:PassedToService"
       values   = ["lambda.amazonaws.com", "apigateway.amazonaws.com"]
-    }
-  }
-
-  statement {
-    sid       = "EdgeReplicatorRole"
-    actions   = ["iam:CreateServiceLinkedRole"]
-    resources = ["*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "iam:AWSServiceName"
-      values   = ["replicator.lambda.amazonaws.com", "logger.cloudfront.amazonaws.com"]
     }
   }
 
@@ -567,7 +535,7 @@ data "aws_iam_policy_document" "plan_read" {
   statement {
     sid       = "StackIamRead"
     actions   = ["iam:Get*", "iam:List*"]
-    resources = concat(local.stack_role_arns, local.stack_policy_arns, [local.site_user_arn, "arn:aws:iam::aws:policy/*"])
+    resources = concat(local.stack_role_arns, local.stack_policy_arns, ["arn:aws:iam::aws:policy/*"])
   }
 
   # Bucket configuration only; object reads are denied below.
