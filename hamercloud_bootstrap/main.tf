@@ -595,7 +595,7 @@ data "aws_iam_policy_document" "plan_read" {
 
   statement {
     sid       = "AccountWideReads"
-    actions   = ["sts:GetCallerIdentity", "acm:ListCertificates", "acm:DescribeCertificate", "acm:ListTagsForCertificate"]
+    actions   = ["sts:GetCallerIdentity", "acm:ListCertificates", "acm:DescribeCertificate", "acm:GetCertificate", "acm:ListTagsForCertificate"]
     resources = ["*"]
   }
 
